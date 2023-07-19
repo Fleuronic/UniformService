@@ -2,34 +2,34 @@
 import PackageDescription
 
 let package = Package(
-    name: "UniformService",
+	name: "UniformService",
 	platforms: [
-		.iOS(.v13),
-		.macOS(.v10_15),
-		.tvOS(.v13),
-		.watchOS(.v6)
+		.iOS(.v15),
+		.macOS(.v12),
+		.tvOS(.v15),
+		.watchOS(.v8)
 	],
 	products: [
-        .library(
-            name: "UniformService",
-            targets: ["UniformService"]
+		.library(
+			name: "UniformService",
+			targets: ["UniformService"]
 		)
-    ],
-    dependencies: [
+	],
+	dependencies: [
 		.package(url: "https://github.com/Fleuronic/Uniform", branch: "main"),
 		.package(url: "https://github.com/JohnSundell/Identity", from: "0.1.0"),
 		.package(url: "https://github.com/Fleuronic/Catenary", branch: "main"),
 		.package(url: "https://github.com/Fleuronic/Catenoid", branch: "main")
 	],
-    targets: [
-        .target(
-            name: "UniformService",
-            dependencies: [
+	targets: [
+		.target(
+			name: "UniformService",
+			dependencies: [
 				"Uniform",
 				"Identity",
 				"Catenary",
 				"Catenoid"
 			]
 		)
-    ]
+	]
 )
