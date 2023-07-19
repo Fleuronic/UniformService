@@ -37,15 +37,6 @@
       }
     },
     {
-      "identity" : "diesel",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Fleuronic/Diesel",
-      "state" : {
-        "branch" : "main",
-        "revision" : "11e6c37bc9c15ea0c67bcab2e421d68621fddb31"
-      }
-    },
-    {
       "identity" : "differ",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tonyarnold/Differ.git",
@@ -88,6 +79,15 @@
       "state" : {
         "branch" : "master",
         "revision" : "32be7bd5f65405678257aeee76859b03cffb89e7"
+      }
+    },
+    {
+      "identity" : "uniform",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Fleuronic/Uniform",
+      "state" : {
+        "branch" : "main",
+        "revision" : "fe33bf34335033ee0a88f827873cecc8499523af"
       }
     }
   ],
