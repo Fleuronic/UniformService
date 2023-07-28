@@ -8,9 +8,9 @@ extension Service: VenueSpec where
     API: VenueSpec,
     API.VenueResult == APIResult<Venue.Identified>,
     Database: VenueSpec,
-    Database.VenueResult == Venue.Identified? {
+    Database.VenueResult == DatabaseResult<Venue.Identified?> {
     public func find(_ venue: Venue, at address: Address.Identified) async -> APIResult<Venue.Identified> {
-        await database.find(venue, at: address).map(APIResult.success).asyncMapNil {
+        await database.find(venue, at: address).value.map(APIResult.success).asyncMapNil {
             await api.find(venue, at: address)
         }
     }

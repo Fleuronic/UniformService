@@ -32,10 +32,8 @@ extension Service: EventSpec where
     Self: AddressSpec,
     Self: VenueSpec,
     Self: SlotSpec,
-    API: HasuraAPI,
-    API: EventSpec,
-    API.EventUpdateResult == APIResult<[Diesel.Event.ID]> {
-    public func updateEvents(current: Bool, for year: Int) async -> API.EventUpdateResult {
+    API: HasuraAPI {
+    public func updateEvents(current: Bool, for year: Int) async -> APIResult<[Diesel.Event.ID]> {
         let eventPlacements = await data(current: current, for: year)
         return await zip(
             data(events: eventPlacements.map(\.0)),
@@ -86,9 +84,6 @@ extension Service: EventSpec where
 
 // MARK: -
 public extension Service {
-    typealias EventData = (Diesel.Event, Venue, Address, Location, [Slot], [Feature?], [Corps?], [Location?])
-    typealias EventSlotPerformancePlacementData = (Diesel.Event.Identified, [Slot.Identified], [Performance.Identified], [Diesel.Placement.Identified])
-
     struct Placement: Decodable {
         let rank: Int
         let groupName: String
@@ -99,6 +94,9 @@ public extension Service {
 
 // MARK: -
 private extension Service {
+    typealias EventData = (Diesel.Event, Venue, Address, Location, [Slot], [Feature?], [Corps?], [Location?])
+    typealias EventSlotPerformancePlacementData = (Diesel.Event.Identified, [Slot.Identified], [Performance.Identified], [Diesel.Placement.Identified])
+
     struct Event: Decodable {
         let name: String
         let startDate: String

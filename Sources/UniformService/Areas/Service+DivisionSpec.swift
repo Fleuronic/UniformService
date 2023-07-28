@@ -7,9 +7,9 @@ extension Service: DivisionSpec where
     API: DivisionSpec,
     API.DivisionResult == APIResult<Division.Identified>,
     Database: DivisionSpec,
-    Database.DivisionResult == Division.Identified? {
+    Database.DivisionResult == DatabaseResult<Division.Identified?> {
     public func find(_ division: Division) async -> APIResult<Division.Identified> {
-        await database.find(division).map(APIResult.success).asyncMapNil {
+        await database.find(division).value.map(APIResult.success).asyncMapNil {
             await api.find(division)
         }
     }

@@ -8,9 +8,9 @@ extension Service: FeatureSpec where
     API: FeatureSpec,
     API.FeatureResult == APIResult<Feature.Identified>,
     Database: FeatureSpec,
-    Database.FeatureResult == Feature.Identified? {
+    Database.FeatureResult == DatabaseResult<Feature.Identified?> {
     public func find(_ feature: Feature, by corps: Corps.Identified?) async -> APIResult<Feature.Identified> {
-        await database.find(feature, by: corps).map(APIResult.success).asyncMapNil {
+        await database.find(feature, by: corps).value.map(APIResult.success).asyncMapNil {
             await api.find(feature, by: corps)
         }
     }
