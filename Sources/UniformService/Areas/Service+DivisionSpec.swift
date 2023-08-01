@@ -10,7 +10,11 @@ extension Service: DivisionSpec where
     Database.DivisionResult == DatabaseResult<Division.Identified?> {
     public func find(_ division: Division) async -> APIResult<Division.Identified> {
         await database.find(division).value.map(APIResult.success).asyncMapNil {
-            await api.find(division)
+            await api.find(division).asyncFlatMap { division in
+                await database.insert(division).map { _ in
+                    .success(division)
+                }.value
+            }
         }
     }
 }

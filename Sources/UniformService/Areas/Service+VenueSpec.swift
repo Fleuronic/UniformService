@@ -11,7 +11,11 @@ extension Service: VenueSpec where
     Database.VenueResult == DatabaseResult<Venue.Identified?> {
     public func find(_ venue: Venue, at address: Address.Identified) async -> APIResult<Venue.Identified> {
         await database.find(venue, at: address).value.map(APIResult.success).asyncMapNil {
-            await api.find(venue, at: address)
+            await api.find(venue, at: address).asyncFlatMap { venue in
+                await database.insert(venue).map { _ in
+                    .success(venue)
+                }.value
+            }
         }
     }
 }
