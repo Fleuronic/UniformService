@@ -12,10 +12,15 @@ import struct Diesel.Placement
 import struct Diesel.Division
 import struct DieselService.IdentifiedEvent
 import struct DieselService.EventCalendarFields
+import struct DieselService.EventSlugSlotsFields
 import struct DieselService.SlotBaseFields
 import struct DieselService.SlotRelationshipFields
 import struct DieselService.PlacementCalendarFields
 import struct DieselService.PerformanceCalendarFields
+import struct Uniform.Event
+import struct Uniform.Venue
+import struct Uniform.Placement
+import struct Uniform.Schedule
 import struct Foundation.URL
 import struct Foundation.Date
 import struct Foundation.TimeZone
@@ -33,45 +38,12 @@ extension Service: EventSpec where
     Self: VenueSpec,
     Self: SlotSpec,
     API: HasuraAPI {
-    public func updateEvents(current: Bool, for year: Int) async -> APIResult<[Diesel.Event.ID]> {
-        let eventPlacements = await data(current: current, for: year)
-        return await zip(
-            data(events: eventPlacements.map(\.0)),
-            eventPlacements.map(\.1)
-        ).asyncFlatMap { eventData, placements in
-            await eventResult(
-                data: eventData,
-                placements: placements
-            )
-        }.asyncFlatMap { data in
-            guard case let events = data.map(\.0), !events.isEmpty else { return .success([]) }
+	public func createEvents(for year: Int) async -> APIResult<[Diesel.Event.ID]> {
+		await events(for: year).asyncFlatMap(updateEvents)
+	}
 
-            let slots = data.flatMap(\.1)
-            let performances = data.flatMap(\.2)
-            let placements = data.flatMap(\.3)
-
-            return await api.fetch(SlotRelationshipFields.self, where: Slot.isPartOfEvent(from: events)).asyncFlatMap { fields in
-                let slotIDs = fields.map(\.id)
-                let performanceIDs = fields.compactMap(\.performance?.id)
-                let placementIDs = fields.compactMap(\.placement?.id)
-
-                return await api.delete(Slot.Identified.self, with: slotIDs).asyncMap { _ in
-                    await api.delete(Performance.Identified.self, with: performanceIDs)
-                }.asyncMap { _ in
-                    await api.delete(Diesel.Event.Identified.self, where: Diesel.Event.hasName(fromNamesOf: events))
-                }.asyncMap { _ in
-                    await api.delete(Diesel.Placement.Identified.self, with: placementIDs)
-                }.asyncMap { _ in
-                    await api.insert(placements)
-                }.asyncFlatMap { _ in
-                    await api.insert(events)
-                }.asyncFlatMap { eventIDs in
-                    await api.insert(performances).asyncMap { _ in
-                        await api.insert(slots)
-                    }.map { _ in eventIDs }
-                }
-            }
-        }
+    public func updateEvents(current: Bool) async -> APIResult<[Diesel.Event.ID]> {
+		await eventPlacements(current: current).asyncFlatMap(updateEvents)
     }
 
     public func createSchedule(for year: Int) async -> APIResult<[EventCalendarFields]> {
@@ -83,152 +55,15 @@ extension Service: EventSpec where
 }
 
 // MARK: -
-public extension Service {
-    struct Placement: Decodable {
-        let rank: Int
-        let groupName: String
-        let totalScore: Double
-        let divisionName: String
-    }
-}
-
-// MARK: -
 private extension Service {
-    typealias EventData = (Diesel.Event, Venue, Address, Location, [Slot], [Feature?], [Corps?], [Location?])
-    typealias EventSlotPerformancePlacementData = (Diesel.Event.Identified, [Slot.Identified], [Performance.Identified], [Diesel.Placement.Identified])
-
-    struct Event: Decodable {
-        let name: String
-        let startDate: String
-        let timeZone: String
-        let venueAddress: String
-        let venueZIP: String?
-        let venueCity: String
-        let venueState: String
-        let venues: Venues
-        let schedules: [Schedule]?
-    }
-
-    struct Venues: Decodable {
-        let name: String
-    }
-
-    struct Schedule: Decodable {
-        let unitName: String
-        let displayCity: String?
-        let time: String?
-    }
-
-    func data(current: Bool, for year: Int) async -> [(Event, [Placement])] {
-        await slugs.asyncCompactMap { slug in
-            let url = URL(string: "https://dci.org/events/\(slug)")!
-            guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
-
-            let string = String(decoding: data, as: UTF8.self)
-            let eventString = string.firstMatch(of: try! Regex("current\":(\\{\"id.*?),\"liveStreams")).flatMap {
-                $0.output[1].substring
-            }
-
-            guard let eventData = eventString?.data(using: .utf8) else { return nil }
-
-            let event = try! JSONDecoder().decode(Event.self, from: eventData)
-            let name = current ? "Scores" : "Welcome"
-            let time = event.schedules?.first { $0.unitName.contains(name) }?.time
-
-            return await time.asyncFlatMap { time in
-                let formatter = dateTimeFormatter(timeZone: timeZone(for: event.timeZone))
-                let date = formatter.date(from: "\(event.startDate) \(time)")!
-                let interval = date.timeIntervalSinceNow
-                let relevant = current ? abs(interval) < 60 * 60 : interval > 0
-                let placements = (current && relevant) ? await placements(for: slug) : []
-                return relevant ? (event, placements) : nil
-            }
-        }.compactMap { $0 }
-    }
-
-    func placements(for slug: String) async -> [Placement] {
-        var slug = slug
-        if slug == "2023-drums-across-america-atlanta" {
-            slug = "2023-drums-across-america"
-        } else if slug == "2023-the-thunder-of-drums" {
-            slug = "2023-the-kiwanis-thunder-of-drums"
-        }
-
-        let url = URL(string: "https://dci.org/scores/final-scores/\(slug)")!
-        guard let (data, _) = try? await URLSession.shared.data(from: url) else { return [] }
-
-        let string = String(decoding: data, as: UTF8.self)
-        let placementString = string.firstMatch(of: try! Regex("current\":(\\[\\{\"categories.*?),\"listing")).flatMap {
-            $0.output[1].substring
-        }
-
-        return placementString?.data(using: .utf8).flatMap { data in
-            try! JSONDecoder().decode([Placement].self, from: data)
-        } ?? []
-    }
-
-    func data(events: [Event]) -> [EventData] {
-        events.map { event in
-            let timeFormatter = timeFormatter(timeZone: timeZone(for: event.timeZone))
-            return (
-                .init(
-                    name: event.name,
-                    date: dateFormatter.date(from: event.startDate)!,
-                    timeZone: event.timeZone
-                ),
-                .init(
-                    name: event.venues.name.replacingOccurrences(of: "\"", with: "")
-                ),
-                .init(
-                    streetAddress: event.venueAddress,
-                    zipCode: event.venueZIP ?? "66061"
-                ),
-                .init(
-                    city: event.venueCity,
-                    state: event.venueState
-                ),
-                event.schedules?.map { slot in
-                    .init(time: slot.time.flatMap(timeFormatter.date)?.timeIntervalSinceReferenceDate)
-                } ?? [],
-                event.schedules?.map(\.feature) ?? [],
-                event.schedules?.map(\.corps) ?? [],
-                event.schedules?.map { schedule in
-                    schedule.displayCity.map { city in
-                        var components = city.components(separatedBy: ", ")
-                        if components.count == 1 {
-                            components.append("WI")
-                        }
-                        return .init(
-                            city: components[0],
-                            state: components[1]
-                        )
-                    }
-                } ?? []
-            )
-        }
-    }
-    
-    func location(for event: EventCalendarFields) -> String {
-        [
-            event.venue.name,
-            event.venue.address.streetAddress,
-            "\(event.venue.address.location.city), \(event.venue.address.location.state) \(event.venue.address.zipCode)"
-        ].joined(separator: "\n")
-    }
+	typealias EventData = (Diesel.Event, Diesel.Venue, Address, Location, [Slot], [Feature?], [Corps?], [Location?])
+	typealias EventPlacementData = [(Uniform.Event, [Uniform.Placement])]
 
     func dates(for event: EventCalendarFields) -> (Date, Date) {
         let times = event.slots.compactMap(\.time)
         let startTime = times.count > 1 ? times.sorted()[1] : -31539600
         let endTime = times.count > 2 ? times.max()! : -31525200
-        let startDate = Calendar.current.date(
-            byAdding: .hour,
-            value: 19,
-            to: Calendar.current.date(
-                byAdding: .year,
-                value: 1,
-                to: event.date.addingTimeInterval(startTime)
-            )!
-        )!
+		let startDate = Date(date: event.date, startTime: startTime)
         let endDate = startDate.addingTimeInterval(endTime - startTime)
 
         return (startDate, endDate)
@@ -237,6 +72,14 @@ private extension Service {
     func timeZone(for abbreviation: String) -> TimeZone {
         .init(abbreviation: abbreviation.replacingOccurrences(of: "T", with: "DT"))!
     }
+
+	func location(for event: EventCalendarFields) -> String {
+		[
+			event.venue.name,
+			event.venue.address.streetAddress,
+			"\(event.venue.address.location.city), \(event.venue.address.location.state) \(event.venue.address.zipCode)"
+		].joined(separator: "\n")
+	}
 
     func notes(for event: EventCalendarFields, in timeZone: TimeZone) -> String {
         [
@@ -292,6 +135,70 @@ private extension Service {
         }.joined(separator: "\n")
     }
 
+	func placements(for slug: String) async -> [Uniform.Placement] {
+		var slug = slug
+		if slug == "2023-drums-across-america-atlanta" {
+			slug = "2023-drums-across-america"
+		} else if slug == "2023-the-thunder-of-drums" {
+			slug = "2023-the-kiwanis-thunder-of-drums"
+		}
+		
+		let url = URL(string: "https://dci.org/scores/final-scores/\(slug)")!
+		guard let (data, _) = try? await URLSession.shared.data(from: url) else { return [] }
+		
+		let string = String(decoding: data, as: UTF8.self)
+		let placementString = string.firstMatch(of: try! Regex("current\":(\\[\\{\"categories.*?),\"listing")).flatMap {
+			$0.output[1].substring
+		}
+		
+		return placementString?.data(using: .utf8).flatMap { data in
+			try! JSONDecoder().decode([Uniform.Placement].self, from: data)
+		} ?? []
+	}
+
+
+	func eventData(events: [Uniform.Event]) -> [EventData] {
+		events.map { event in
+			let timeFormatter = timeFormatter(timeZone: timeZone(for: event.timeZone))
+			return (
+				.init(
+					name: event.name,
+					slug: event.slug,
+					date: dateFormatter.date(from: event.startDate)!,
+					timeZone: event.timeZone
+				),
+				.init(
+					name: event.venues.name.replacingOccurrences(of: "\"", with: "")
+				),
+				.init(
+					streetAddress: event.venueAddress,
+					zipCode: event.venueZIP ?? "66061"
+				),
+				.init(
+					city: event.venueCity,
+					state: event.venueState
+				),
+				event.schedules?.map { slot in
+					.init(time: slot.time.flatMap(timeFormatter.date)?.timeIntervalSinceReferenceDate)
+				} ?? [],
+				event.schedules?.map(\.feature) ?? [],
+				event.schedules?.map(\.corps) ?? [],
+				event.schedules?.map { schedule in
+					schedule.displayCity.map { city in
+						var components = city.components(separatedBy: ", ")
+						if components.count == 1 {
+							components.append("WI")
+						}
+						return .init(
+							city: components[0],
+							state: components[1]
+						)
+					}
+				} ?? []
+			)
+		}
+	}
+
     func removeExistingEvents(for year: Int, from calendar: EKCalendar, in store: EKEventStore) {
         let existingEvents = store.events(
             matching: store.predicateForEvents(
@@ -335,11 +242,51 @@ private extension Service {
 private extension Service where
     Self: AddressSpec,
     Self: VenueSpec,
-    Self: SlotSpec {
+    Self: SlotSpec,
+	API: HasuraAPI {
+	func events(for year: Int) async -> APIResult<EventPlacementData> {
+		 await eventPlacements(
+			 current: false,
+			 slugs: slugs.filter { $0.contains("\(year)") }
+		 )
+	 }
+
+	 func eventPlacements(current: Bool, slugs: [String]? = nil) async -> APIResult<EventPlacementData> {
+		 let slugs = await slugs.map(APIResult.success).asyncMapNil {
+			 await api.fetch(EventSlugSlotsFields.self).map { events in
+				 events.filter { event in
+					 guard
+						case let times = event.slots.compactMap(\.time).sorted(),
+						times.count > 1 else { return !current }
+
+					 let time = current ? times[1] : times.last!
+					 let date = Date(date: event.date, startTime: time)
+					 return current ? abs(date.timeIntervalSinceNow) < 60 * 60 : date > .init()
+				 }.compactMap(\.slug)
+			 }
+		 }
+
+		 return await slugs.asyncMap { slugs in
+			 await slugs.asyncCompactMap { slug in
+				 let url = URL(string: "https://dci.org/events/\(slug)")!
+				 guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
+
+				 return await String(decoding: data, as: UTF8.self).firstMatch(
+					 of: try! Regex("current\":(\\{\"id.*?),\"liveStreams")
+				 ).flatMap(\.output[1].substring)?.data(using: .utf8).asyncMap { eventData in
+					 (
+						 try! JSONDecoder().decode(Event.self, from: eventData),
+						 current ? await placements(for: slug) : []
+					 )
+				 }
+			 }.compactMap { $0 }
+		 }
+	 }
+
     func eventResult(
         data: EventData,
-        placements: [Placement]
-    ) async -> APIResult<EventSlotPerformancePlacementData> {
+		placements: [Uniform.Placement]
+    ) async -> APIResult<(Diesel.Event.Identified, [Slot.Identified], [Performance.Identified], [Diesel.Placement.Identified])> {
         let (event, venue, address, location, slots, slotFeatures, slotCorps, slotLocations) = data
         return await find(location).asyncFlatMap { location in
             await find(address, in: location).asyncFlatMap { address in
@@ -368,10 +315,50 @@ private extension Service where
             }
         }
     }
+
+	func updateEvents(data: EventPlacementData) async -> APIResult<[Diesel.Event.ID]> {
+		await zip(
+			eventData(events: data.map(\.0)),
+			data.map(\.1)
+		).asyncFlatMap { eventData, placements in
+			await eventResult(
+				data: eventData,
+				placements: placements
+			)
+		}.asyncFlatMap { data in
+			guard case let events = data.map(\.0), !events.isEmpty else { return .success([]) }
+
+			let slots = data.flatMap(\.1)
+			let performances = data.flatMap(\.2)
+			let placements = data.flatMap(\.3)
+
+			return await api.fetch(SlotRelationshipFields.self, where: Slot.isPartOfEvent(from: events)).asyncFlatMap { fields in
+				let slotIDs = fields.map(\.id)
+				let performanceIDs = fields.compactMap(\.performance?.id)
+				let placementIDs = fields.compactMap(\.placement?.id)
+
+				return await api.delete(Slot.Identified.self, with: slotIDs).asyncMap { _ in
+					await api.delete(Performance.Identified.self, with: performanceIDs)
+				}.asyncMap { _ in
+					await api.delete(Diesel.Event.Identified.self, where: Diesel.Event.hasName(fromNamesOf: events))
+				}.asyncMap { _ in
+					await api.delete(Diesel.Placement.Identified.self, with: placementIDs)
+				}.asyncMap { _ in
+					await api.insert(placements)
+				}.asyncFlatMap { _ in
+					await api.insert(events)
+				}.asyncFlatMap { eventIDs in
+					await api.insert(performances).asyncMap { _ in
+						await api.insert(slots)
+					}.map { _ in eventIDs }
+				}
+			}
+		}
+	}
 }
 
 // MARK: -
-private extension Service.Schedule {
+private extension Schedule {
     var feature: Feature? {
         if unitName.contains("Encore") {
             return .init(name: "Encore")
@@ -397,6 +384,24 @@ private extension Service.Schedule {
 
         return nil
     }
+}
+
+// MARK: -
+private extension Date {
+	init(
+		date: Date,
+		startTime: TimeInterval
+	) {
+		self = Calendar.current.date(
+			byAdding: .hour,
+			value: 19,
+			to: Calendar.current.date(
+				byAdding: .year,
+				value: 1,
+				to: date.addingTimeInterval(startTime)
+			)!
+		)!
+	}
 }
 
 private let dateFormatter = {

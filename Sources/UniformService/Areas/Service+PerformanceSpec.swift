@@ -2,6 +2,7 @@ import struct Diesel.Feature
 import struct Diesel.Performance
 import struct Diesel.Placement
 import struct Diesel.Division
+import struct Uniform.Placement
 import protocol Catenary.API
 
 extension Service: PerformanceSpec where
@@ -9,7 +10,7 @@ extension Service: PerformanceSpec where
     public func performanceResult(
         data: CorpsData,
         feature: Feature?,
-        placements: [Placement]
+		placements: [Uniform.Placement]
     ) async -> API.Result<CorpsPerformancePlacementData> {
         await data.asyncFlatMap { corps, corpsName in
             let performance = Performance()

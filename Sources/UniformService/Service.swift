@@ -28,6 +28,6 @@ public extension Service {
     typealias APIResult<Resource> = API.Result<Resource>
     typealias DatabaseResult<Resource> = Database.Result<Resource>
     typealias CorpsData = (Corps.Identified, String)?
-    typealias SlotPerformancePlacementData = (Slot.Identified, Performance.Identified?, Diesel.Placement.Identified?)
-    typealias CorpsPerformancePlacementData = (Corps.Identified?, Performance.Identified?, Diesel.Placement.Identified?)
+    typealias SlotPerformancePlacementData = (Slot.Identified, Performance.Identified?, Placement.Identified?)
+    typealias CorpsPerformancePlacementData = (Corps.Identified?, Performance.Identified?, Placement.Identified?)
 }

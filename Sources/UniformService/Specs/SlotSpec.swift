@@ -3,7 +3,6 @@ import struct Diesel.Slot
 import struct Diesel.Feature
 import struct Diesel.Corps
 import struct Diesel.Location
-import struct Diesel.Placement
 import struct Diesel.Performance
 import struct DieselService.IdentifiedCorps
 import struct DieselService.IdentifiedPerformance

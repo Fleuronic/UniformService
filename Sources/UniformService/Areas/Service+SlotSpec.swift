@@ -3,12 +3,12 @@ import struct Diesel.Slot
 import struct Diesel.Feature
 import struct Diesel.Corps
 import struct Diesel.Location
-import struct Diesel.Placement
 import struct Diesel.Performance
 import struct DieselService.IdentifiedCorps
 import struct DieselService.IdentifiedPerformance
 import struct DieselService.IdentifiedPlacement
 import struct DieselService.IdentifiedEvent
+import struct Uniform.Placement
 import protocol Catenary.API
 
 extension Service: SlotSpec where
