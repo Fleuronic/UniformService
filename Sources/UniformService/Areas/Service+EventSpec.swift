@@ -9,16 +9,8 @@ import struct Diesel.Feature
 import struct Diesel.Performance
 import struct Diesel.Corps
 import struct Diesel.Placement
-import struct Diesel.Division
 import struct DieselService.IdentifiedEvent
-import struct DieselService.EventCalendarFields
-import struct DieselService.EventSlugSlotsFields
-import struct DieselService.SlotBaseFields
-import struct DieselService.SlotRelationshipFields
-import struct DieselService.PlacementCalendarFields
-import struct DieselService.PerformanceCalendarFields
 import struct Uniform.Event
-import struct Uniform.Venue
 import struct Uniform.Placement
 import struct Uniform.Schedule
 import struct Foundation.URL
@@ -28,7 +20,6 @@ import struct Foundation.Calendar
 import class Foundation.DateFormatter
 import class Foundation.JSONDecoder
 import class Foundation.URLSession
-import protocol Catenary.API
 import protocol Caesura.HasuraAPI
 
 import EventKit
@@ -39,11 +30,15 @@ extension Service: EventSpec where
     Self: SlotSpec,
     API: HasuraAPI {
 	public func createEvents(for year: Int) async -> APIResult<[Diesel.Event.ID]> {
-		await events(for: year).asyncFlatMap(updateEvents)
+		await events(for: year).asyncFlatMap { data in
+			await updateEvents(current: false, data: data)
+		}
 	}
 
     public func updateEvents(current: Bool) async -> APIResult<[Diesel.Event.ID]> {
-		await eventPlacements(current: current).asyncFlatMap(updateEvents)
+		await eventPlacements(current: current).asyncFlatMap { data in
+			await updateEvents(current: current, data: data)
+		}
     }
 
     public func createSchedule(for year: Int) async -> APIResult<[EventCalendarFields]> {
@@ -251,37 +246,38 @@ private extension Service where
 		 )
 	 }
 
-	 func eventPlacements(current: Bool, slugs: [String]? = nil) async -> APIResult<EventPlacementData> {
-		 let slugs = await slugs.map(APIResult.success).asyncMapNil {
-			 await api.fetch(EventSlugSlotsFields.self).map { events in
-				 events.filter { event in
-					 guard
+	func eventPlacements(current: Bool, slugs: [String]? = nil) async -> APIResult<EventPlacementData> {
+		let slugs = await slugs.map(APIResult.success).asyncMapNil {
+			await api.fetch(EventSlugSlotsFields.self).map { events in
+				events.filter { event in
+					guard
 						case let times = event.slots.compactMap(\.time).sorted(),
 						times.count > 1 else { return !current }
+					 
+					let time = current ? times.last! : times[1]
+					let date = Date(date: event.date, startTime: time)
+					let needsPlacements = event.slots.compactMap(\.placementID).isEmpty
+					return date > .init() && (current ? date.timeIntervalSinceNow < 60 * 60 && needsPlacements : true)
+				}.compactMap(\.slug)
+			}
+		}
 
-					 let time = current ? times[1] : times.last!
-					 let date = Date(date: event.date, startTime: time)
-					 return current ? abs(date.timeIntervalSinceNow) < 60 * 60 : date > .init()
-				 }.compactMap(\.slug)
-			 }
-		 }
+		return await slugs.asyncMap { slugs in
+			await slugs.asyncCompactMap { slug in
+				let url = URL(string: "https://dci.org/events/\(slug)")!
+				guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
 
-		 return await slugs.asyncMap { slugs in
-			 await slugs.asyncCompactMap { slug in
-				 let url = URL(string: "https://dci.org/events/\(slug)")!
-				 guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
-
-				 return await String(decoding: data, as: UTF8.self).firstMatch(
+				return await String(decoding: data, as: UTF8.self).firstMatch(
 					 of: try! Regex("current\":(\\{\"id.*?),\"liveStreams")
-				 ).flatMap(\.output[1].substring)?.data(using: .utf8).asyncMap { eventData in
+				).flatMap(\.output[1].substring)?.data(using: .utf8).asyncMap { eventData in
 					 (
 						 try! JSONDecoder().decode(Event.self, from: eventData),
 						 current ? await placements(for: slug) : []
 					 )
-				 }
-			 }.compactMap { $0 }
-		 }
-	 }
+				}
+			}.compactMap { $0 }
+		}
+	}
 
     func eventResult(
         data: EventData,
@@ -316,7 +312,10 @@ private extension Service where
         }
     }
 
-	func updateEvents(data: EventPlacementData) async -> APIResult<[Diesel.Event.ID]> {
+	func updateEvents(
+		current: Bool,
+		data: EventPlacementData
+	) async -> APIResult<[Diesel.Event.ID]> {
 		await zip(
 			eventData(events: data.map(\.0)),
 			data.map(\.1)
@@ -326,23 +325,25 @@ private extension Service where
 				placements: placements
 			)
 		}.asyncFlatMap { data in
-			guard case let events = data.map(\.0), !events.isEmpty else { return .success([]) }
+			let data = current ? (data.enumerated().filter {
+				Set(data.enumerated().filter { !$0.1.3.isEmpty }.map(\.0)).contains($0.0)
+			}).map(\.1) : data
 
+			let events = data.map(\.0)
 			let slots = data.flatMap(\.1)
 			let performances = data.flatMap(\.2)
 			let placements = data.flatMap(\.3)
 
-			return await api.fetch(SlotRelationshipFields.self, where: Slot.isPartOfEvent(from: events)).asyncFlatMap { fields in
+			guard !events.isEmpty, !(current && placements.isEmpty) else { return .success([]) }
+
+			return await api.fetch(SlotTimePerformancePlacementFields.self, where: Slot.isPartOfEvent(from: events)).asyncFlatMap { fields in
 				let slotIDs = fields.map(\.id)
-				let performanceIDs = fields.compactMap(\.performance?.id)
-				let placementIDs = fields.compactMap(\.placement?.id)
+				let performanceIDs = fields.compactMap(\.performanceID)
 
 				return await api.delete(Slot.Identified.self, with: slotIDs).asyncMap { _ in
 					await api.delete(Performance.Identified.self, with: performanceIDs)
 				}.asyncMap { _ in
 					await api.delete(Diesel.Event.Identified.self, where: Diesel.Event.hasName(fromNamesOf: events))
-				}.asyncMap { _ in
-					await api.delete(Diesel.Placement.Identified.self, with: placementIDs)
 				}.asyncMap { _ in
 					await api.insert(placements)
 				}.asyncFlatMap { _ in
@@ -413,13 +414,6 @@ private let dateFormatter = {
 private func timeFormatter(timeZone: TimeZone) -> DateFormatter {
     let formatter = DateFormatter()
     formatter.dateFormat = "h:mm a"
-    formatter.timeZone = timeZone
-    return formatter
-}
-
-private func dateTimeFormatter(timeZone: TimeZone) -> DateFormatter {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "YYYY-MM-dd h:mm a"
     formatter.timeZone = timeZone
     return formatter
 }

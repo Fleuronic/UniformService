@@ -1,3 +1,5 @@
+// Copyright © Fleuronic LLC. All rights reserved.
+
 import struct Diesel.Feature
 import struct Diesel.Performance
 

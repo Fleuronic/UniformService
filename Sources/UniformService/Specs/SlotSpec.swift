@@ -1,3 +1,5 @@
+// Copyright © Fleuronic LLC. All rights reserved.
+
 import struct Diesel.Event
 import struct Diesel.Slot
 import struct Diesel.Feature
