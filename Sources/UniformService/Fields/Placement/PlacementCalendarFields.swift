@@ -39,6 +39,7 @@ private extension PlacementCalendarFields {
 		self.id = id
 		self.rank = rank
 		self.score = score
+
 		division = .init(
 			id: divisionID,
 			name: divisionName

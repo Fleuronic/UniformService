@@ -47,21 +47,6 @@ extension SlotTimePerformancePlacementFields: Decodable {
 }
 
 // MARK: -
-private extension SlotTimePerformancePlacementFields {
-	init(
-		id: Slot.ID,
-		time: TimeInterval?,
-		performanceID: Performance.ID,
-		placementID: Placement.ID
-	) {
-		self.id = id
-		self.time = time
-		self.performanceID = performanceID
-		self.placementID = placementID
-	}
-}
-
-// MARK: -
 private extension Performance {
 	enum CodingKeys: String, CodingKey {
 		case id

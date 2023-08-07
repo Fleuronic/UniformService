@@ -1,10 +1,8 @@
 // Copyright © Fleuronic LLC. All rights reserved.
 
 public protocol EventSpec {
-	associatedtype EventListResult
-	associatedtype ScheduleResult
+	associatedtype EventsResult
 
-	func createEvents(for year: Int) async -> EventListResult
-    func updateEvents(current: Bool) async -> EventListResult
-	func createSchedule(for year: Int) async -> ScheduleResult
+	func createEvents(for year: Int) async -> EventsResult
+    func updateEvents(current: Bool) async -> EventsResult
 }

@@ -35,6 +35,7 @@ private extension FeatureCalendarFields {
 	) {
 		self.id = id
 		self.name = name
+
 		corps = .init(
 			id: corpsID,
 			name: name

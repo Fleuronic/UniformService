@@ -10,14 +10,14 @@ import struct Foundation.TimeInterval
 import protocol DieselService.EventFields
 import protocol Identity.Identifiable
 
-public struct EventSlugSlotsFields {
+public struct EventDateSlugSlotsFields {
 	public let id: Event.ID
 	public let date: Date
 	public let slug: String?
 	public let slots: [SlotTimePlacementFields]
 }
 
-extension EventSlugSlotsFields: EventFields {
+extension EventDateSlugSlotsFields: EventFields {
 	// MARK: ModelProjection
 	public static let projection = Projection<Event.Identified, Self>(
 		Self.init,
@@ -44,7 +44,7 @@ extension EventSlugSlotsFields: EventFields {
 }
 
 // MARK: -
-private extension EventSlugSlotsFields {
+private extension EventDateSlugSlotsFields {
 	enum ToManyKeys: String {
 		case slots
 		case id
