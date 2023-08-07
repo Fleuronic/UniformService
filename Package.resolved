@@ -1,12 +1,21 @@
 {
   "pins" : [
     {
+      "identity" : "caesura",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Fleuronic/Caesura",
+      "state" : {
+        "branch" : "main",
+        "revision" : "93c998acbae9530487de5b3e6a82779698667e46"
+      }
+    },
+    {
       "identity" : "catena",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Fleuronic/Catena",
       "state" : {
         "branch" : "main",
-        "revision" : "8323ea025431d255506c292fff1c8ccd016cec57"
+        "revision" : "ef685764ba13c9da00c6bb0a0089babaa7f9ecd2"
       }
     },
     {
@@ -15,7 +24,7 @@
       "location" : "https://github.com/Fleuronic/Catenary",
       "state" : {
         "branch" : "main",
-        "revision" : "110fb9e750a901cd0b0b23ccd3af300209e33075"
+        "revision" : "80e8f3800b0027ee1164f79eac6f2ed903542b61"
       }
     },
     {
@@ -42,7 +51,7 @@
       "location" : "https://github.com/Fleuronic/Diesel",
       "state" : {
         "branch" : "main",
-        "revision" : "cd57f603747bf35ffa3a93af46bbf4123cf63a8d"
+        "revision" : "1ea935ca10ec4c82b5705691cb7c834f57ed0f54"
       }
     },
     {
@@ -51,7 +60,7 @@
       "location" : "https://github.com/Fleuronic/DieselService",
       "state" : {
         "branch" : "main",
-        "revision" : "9d3c66ffb8753aa1c8d1aacc5a2e64f4086292bc"
+        "revision" : "f90074259bc821fb566dd3ed55fb631829c1e813"
       }
     },
     {
@@ -78,7 +87,7 @@
       "location" : "https://github.com/Fleuronic/PersistDB",
       "state" : {
         "branch" : "master",
-        "revision" : "d4b550cb11f2abad400431d308291974cd14a6b9"
+        "revision" : "c5938f5614d937bd342a44a6960108fa754abac8"
       }
     },
     {
@@ -96,7 +105,16 @@
       "location" : "https://github.com/Fleuronic/Schemata",
       "state" : {
         "branch" : "master",
-        "revision" : "32be7bd5f65405678257aeee76859b03cffb89e7"
+        "revision" : "103895ce834495061e9d059ea429091842527e96"
+      }
+    },
+    {
+      "identity" : "sociableweaver",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/NicholasBellucci/SociableWeaver.git",
+      "state" : {
+        "revision" : "dd8368fcf1f8fef5d672ea64775dc6f7b02d7a92",
+        "version" : "0.1.12"
       }
     },
     {
@@ -105,7 +123,16 @@
       "location" : "https://github.com/Fleuronic/Uniform",
       "state" : {
         "branch" : "main",
-        "revision" : "575e4af51cee8cc1281ff0113cf712f3a82c7167"
+        "revision" : "c1304278b82d2e72c198033d5b5d2ed03a60ab9b"
+      }
+    },
+    {
+      "identity" : "yamlswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/behrang/YamlSwift",
+      "state" : {
+        "revision" : "287f5cab7da0d92eb947b5fd8151b203ae04a9a3",
+        "version" : "3.4.4"
       }
     }
   ],
