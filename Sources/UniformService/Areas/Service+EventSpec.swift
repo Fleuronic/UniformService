@@ -14,8 +14,10 @@ import struct DieselService.IdentifiedEvent
 import struct Uniform.Event
 import struct Uniform.Placement
 import struct Uniform.Schedule
+import struct Uniform.Site
 import struct Foundation.URL
 import struct Foundation.Date
+import struct Foundation.TimeInterval
 import class Foundation.JSONDecoder
 import class Foundation.URLSession
 import class Foundation.DateFormatter
@@ -38,25 +40,15 @@ extension Service: EventSpec where Self: AddressSpec & VenueSpec & SlotSpec, API
 // MARK: -
 private extension Service {
 	typealias EventData = (Diesel.Event, Diesel.Venue, Address, Location, [Slot], [Feature?], [Corps?], [Location?])
+	typealias EventResult = (Diesel.Event.Identified, [Slot.Identified], [Performance.Identified], [Diesel.Placement.Identified])
 	typealias EventPlacementData = [(Uniform.Event, [Uniform.Placement])]
 
 	func placements(for slug: String) async -> [Uniform.Placement] {
-		var slug = slug
-		if slug == "2023-drums-across-america-atlanta" {
-			slug = "2023-drums-across-america"
-		} else if slug == "2023-the-thunder-of-drums" {
-			slug = "2023-the-kiwanis-thunder-of-drums"
-		}
-		
-		let url = URL(string: "https://dci.org/scores/final-scores/\(slug)")!
-		guard let (data, _) = try? await URLSession.shared.data(from: url) else { return [] }
-		
-		let string = String(decoding: data, as: UTF8.self)
-		let placementString = string.firstMatch(of: try! Regex("current\":(\\[\\{\"categories.*?),\"listing")).flatMap {
-			$0.output[1].substring
-		}
-		
-		return placementString?.data(using: .utf8).flatMap { data in
+		await Site(
+			domain: .dci,
+			path: .scores,
+			slug: slug.normalized(from: .slugs)
+		)?.data.flatMap { data in
 			try! JSONDecoder().decode([Uniform.Placement].self, from: data)
 		} ?? []
 	}
@@ -65,10 +57,11 @@ private extension Service {
 // MARK: -
 private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
 	func events(for year: Int) async -> APIResult<EventPlacementData> {
-//		let slugs: [String] = []
-		return await eventPlacements(
+		await eventPlacements(
 			span: .season,
-			slugs: slugs.filter { $0.contains("\(year)") }
+			slugs: Array(resource: .slugs).filter {
+				$0.contains("\(year)")
+			}
 		)
 	}
 
@@ -88,13 +81,17 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 		let slugs = await slugs.map(APIResult.success).asyncMapNil {
 			await api.fetch(EventDateSlugSlotsFields.self).map { events in
 				events.filter { event in
-					guard
-						case let times = event.slots.compactMap(\.time).sorted(),
-						times.count > 1 else { return span == .season }
-
-					let time = span == .current ? times.last! : times[1]
-					let date = Date(date: event.date, startTime: time)
+					let date: Date
+					let times = event.slots.compactMap(\.time).sorted()
 					let needsPlacements = event.slots.compactMap(\.placementID).isEmpty
+
+					if times.count < 2 {
+						date = event.date
+					} else if span == .current {
+						date = Date(date: event.date, startTime: times.last!)
+					} else {
+						date = Date(date: event.date, startTime: times[1])
+					}
 
 					switch span {
 					case .season:
@@ -110,12 +107,11 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 
 		return await slugs.asyncMap { slugs in
 			await slugs.asyncCompactMap { slug in
-				let url = URL(string: "https://dci.org/events/\(slug)")!
-				guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
-
-				return await String(decoding: data, as: UTF8.self).firstMatch(
-					 of: try! Regex("current\":(\\{\"id.*?),\"liveStreams")
-				).flatMap(\.output[1].substring)?.data(using: .utf8).asyncMap { eventData in
+				await Site(
+					domain: .dci,
+					path: .events,
+					slug: slug
+				)?.data.asyncMap { eventData in
 					 (
 						 try! JSONDecoder().decode(Event.self, from: eventData),
 						 span == .upcoming ? [] : await placements(for: slug)
@@ -128,7 +124,7 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
     func eventResult(
         data: EventData,
 		placements: [Uniform.Placement]
-    ) async -> APIResult<(Diesel.Event.Identified, [Slot.Identified], [Performance.Identified], [Diesel.Placement.Identified])> {
+    ) async -> APIResult<EventResult> {
         let (event, venue, address, location, slots, slotFeatures, slotCorps, slotLocations) = data
         return await find(location).asyncFlatMap { location in
             await find(address, in: location).asyncFlatMap { address in
@@ -222,7 +218,7 @@ private extension Uniform.Event {
 			),
 			.init(
 				streetAddress: venueAddress,
-				zipCode: venueZIP ?? "66061"
+				zipCode: venueZIP ?? .inserted(for: venueAddress, from: .addresses)!
 			),
 			.init(
 				city: venueCity,
@@ -235,10 +231,11 @@ private extension Uniform.Event {
 			schedules?.map(\.corps) ?? [],
 			schedules?.map { schedule in
 				schedule.displayCity.map { city in
-					var components = city.components(separatedBy: ", ")
+					var components = city.normalized(from: .locations).components(separatedBy: ", ")
 					if components.count == 1 {
-						components.append("WI")
+						components.append(.inserted(for: components[0], from: .locations)!)
 					}
+
 					return .init(
 						city: components[0],
 						state: components[1]
@@ -248,88 +245,3 @@ private extension Uniform.Event {
 		)
 	}
 }
-
-let slugs = [
-	"2023-dci-little-rock",
-	"2023-drums-along-the-rockies",
-	"2023-show-of-shows",
-	"2023-dci-world-championship-finals",
-	"2023-dci-open-class-world-championship-prelims",
-	"2023-dci-open-class-world-championship-finals",
-	"2023-whitewater-classic",
-	"2023-gold-showcase",
-	"2023-brass-impact",
-	"2023-music-on-the-march",
-	"2023-shoremen-brass-classic",
-	"2023-drums-across-the-smokies",
-	"2023-drums-across-the-river-region",
-	"2023-dci-birmingham",
-	"2023-dci-huntington",
-	"2023-dci-glassboro",
-	"2023-midwest-classic",
-	"2023-celebration-in-brass",
-	"2023-so-cal-classic",
-	"2023-lake-erie-fanfare",
-	"2023-summer-music-games-in-cincinnati",
-	"2023-nightbeat",
-	"2023-summer-music-games-of-southwest-virginia",
-	"2023-dci-broken-arrow",
-	"2023-soaring-sounds",
-	"2023-the-beanpot",
-	"2023-western-corps-connection",
-	"2023-march-on",
-	"2023-corps-at-the-crest-san-diego",
-	"2023-midcal-champions-showcase",
-	"2023-dci-capital-classic",
-	"2023-drums-on-parade",
-	"2023-dci-west",
-	"2023-cavalcade-of-brass",
-	"2023-the-thunder-of-drums",
-	"2023-corps-encore",
-	"2023-the-masters-of-the-summer-music-games",
-	"2023-dci-monroe",
-	"2023-dci-eastern-illinois",
-	"2023-dci-austin",
-	"2023-music-on-the-mountain",
-	"2023-drum-corps-at-the-rose-bowl",
-	"2023-rotary-music-festival",
-	"2023-tournament-of-drums",
-	"2023-resound",
-	"2023-riverside-open",
-	"2023-west-texas-drums",
-	"2023-drums-across-the-desert",
-	"2023-river-city-rhapsody-la-crosse",
-	"2023-drums-across-america-atlanta",
-	"2023-drums-on-the-chippewa",
-	"2023-dci-central-indiana",
-	"2023-dci-world-championship-prelims",
-	"2023-drums-along-the-rockies-cheyenne-edition",
-	"2023-summer-thunder",
-	"2023-dci-new-hampshire",
-	"2023-dci-world-championship-semifinals",
-	"2023-dci-eastern-classic",
-	"2023-drum-corps-an-american-tradition",
-	"2023-dci-mckinney",
-	"2023-dci-southeastern-championship",
-	"2023-dci-tupelo",
-	"2023-dci-eastern-classic-2",
-	"2023-dci-pittsburgh",
-	"2023-dci-cincinnati",
-	"2023-dci-denton",
-	"2023-dci-houston",
-	"2023-dci-southwestern-championship",
-	"2023-crownbeat",
-	"2023-dci-mesquite",
-	"2023-dci-southern-mississippi",
-	"2023-midwest-premiere",
-	"2023-dci-east-coast-showcase-quincy",
-	"2023-dci-east-coast-showcase-lawrence",
-	"2023-innovations-in-brass",
-	"2023-white-rose-classic",
-	"2023-drums-in-the-heartland",
-	"2023-dci-connecticut",
-	"2023-brigadiers-pageant-of-drums",
-	"2023-dci-macon",
-	"2023-dci-abilene",
-	"2023-beats-in-the-brook"
-]

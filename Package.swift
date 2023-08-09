@@ -19,8 +19,7 @@ let package = Package(
 		.package(url: "https://github.com/Fleuronic/Uniform", branch: "main"),
 		.package(url: "https://github.com/Fleuronic/DieselService", branch: "main"),
 		.package(url: "https://github.com/Fleuronic/Caesura", branch: "main"),
-		.package(url: "https://github.com/JohnSundell/Identity", from: "0.1.0"),
-		.package(url: "https://github.com/behrang/YamlSwift", from: "3.4.4")
+		.package(url: "https://github.com/JohnSundell/Identity", from: "0.1.0")
 	],
     targets: [
         .target(
@@ -29,11 +28,7 @@ let package = Package(
 				"Uniform",
 				"DieselService",
 				"Caesura",
-				"Identity",
-				.product(name: "Yaml", package: "YamlSwift")
-			],
-			resources: [
-				.copy("Resources/slugs.yaml")
+				"Identity"
 			]
 		)
     ]
