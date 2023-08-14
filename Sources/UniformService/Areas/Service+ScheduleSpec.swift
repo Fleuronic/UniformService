@@ -93,8 +93,11 @@ private extension Service {
 		_ = try! await EKEventStore().requestAccess(to: .event)
 
 		let store = EKEventStore()
-		print(store.calendars(for: .event))
 		let calendar = store.calendars(for: .event).filter { $0.title == "Drum Corps" }.first!
+		let events = events.filter { event in
+			Calendar.current.component(.year, from: event.date) == year
+		}
+
 		removeExistingEvents(for: year, from: calendar, in: store)
 
 		events.forEach { event in

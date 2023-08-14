@@ -47,7 +47,7 @@ private extension Service {
 		await Site(
 			domain: .dci,
 			path: .scores,
-			slug: slug.normalized(from: .slugs)
+			slug: slug.normalized(from: .events)
 		)?.data.flatMap { data in
 			try! JSONDecoder().decode([Uniform.Placement].self, from: data)
 		} ?? []
@@ -59,7 +59,7 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 	func events(for year: Int) async -> APIResult<EventPlacementData> {
 		await eventPlacements(
 			span: .season,
-			slugs: Array(resource: .slugs).filter {
+			slugs: Array(resource: .events).filter {
 				$0.contains("\(year)")
 			}
 		)
@@ -112,10 +112,9 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 					path: .events,
 					slug: slug
 				)?.data.asyncMap { eventData in
-					 (
-						 try! JSONDecoder().decode(Event.self, from: eventData),
-						 span == .upcoming ? [] : await placements(for: slug)
-					 )
+					let event = try? JSONDecoder().decode(Event.self, from: eventData)
+					let placements = span == .upcoming ? [] : await placements(for: slug)
+					return await event.asyncMap { ($0, placements) }
 				}
 			}.compactMap { $0 }
 		}
