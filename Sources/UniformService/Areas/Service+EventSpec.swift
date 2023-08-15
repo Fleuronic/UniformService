@@ -17,10 +17,12 @@ import struct Uniform.Schedule
 import struct Uniform.Site
 import struct Foundation.URL
 import struct Foundation.Date
+import struct Foundation.Data
 import struct Foundation.TimeInterval
 import class Foundation.JSONDecoder
 import class Foundation.URLSession
 import class Foundation.DateFormatter
+import class Foundation.Bundle
 import protocol Caesura.HasuraAPI
 
 extension Service: EventSpec where Self: AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
@@ -58,6 +60,7 @@ private extension Service {
 private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
 	func events(for year: Int) async -> APIResult<EventPlacementData> {
 		await eventPlacements(
+			year: year,
 			span: .season,
 			slugs: Array(resource: .events).filter {
 				$0.contains("\(year)")
@@ -75,6 +78,7 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 	}
 
 	func eventPlacements(
+		year: Int? = nil,
 		span: Span,
 		slugs: [String]? = nil
 	) async -> APIResult<EventPlacementData> {
@@ -105,18 +109,42 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 			}
 		}
 
-		return await slugs.asyncMap { slugs in
-			await slugs.asyncCompactMap { slug in
-				await Site(
-					domain: .dci,
-					path: .events,
-					slug: slug
-				)?.data.asyncMap { eventData in
-					let event = try? JSONDecoder().decode(Event.self, from: eventData)
-					let placements = span == .upcoming ? [] : await placements(for: slug)
-					return await event.asyncMap { ($0, placements) }
-				}
-			}.compactMap { $0 }
+		if let eventData = (
+			year.map {
+				try! Foundation.Data(
+					contentsOf: Bundle.module.url(
+						forResource: "\($0)",
+						withExtension: "json"
+					)!,
+					options: []
+				)
+			}
+		) {
+			return await slugs.asyncMap { slugs in
+				let events = try! JSONDecoder().decode([Uniform.Event].self, from: eventData)
+				return await zip(
+					events.sorted {
+						$0.slug < $1.slug
+					},
+					slugs.asyncMap { slug in
+						await placements(for: slug)
+					}
+				)
+			}.map(Array.init)
+		} else {
+			return await slugs.asyncMap { slugs in
+				await slugs.asyncCompactMap { slug in
+					await Site(
+						domain: .dci,
+						path: .events,
+						slug: slug
+					)?.data.asyncMap { eventData in
+						let event = try? JSONDecoder().decode(Event.self, from: eventData)
+						let placements = span == .upcoming ? [] : await placements(for: slug)
+						return await event.asyncMap { ($0, placements) }
+					}
+				}.compactMap { $0 }
+			}
 		}
 	}
 
@@ -213,7 +241,7 @@ private extension Uniform.Event {
 				timeZone: timeZone
 			),
 			.init(
-				name: venues.name.replacingOccurrences(of: "\"", with: "")
+				name: venueName.replacingOccurrences(of: "\"", with: "")
 			),
 			.init(
 				streetAddress: venueAddress,

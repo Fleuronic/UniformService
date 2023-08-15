@@ -29,6 +29,9 @@ let package = Package(
 				"DieselService",
 				"Caesura",
 				"Identity"
+			],
+			resources: [
+				.copy("Resources/Events/2018.json"),
 			]
 		)
     ]
