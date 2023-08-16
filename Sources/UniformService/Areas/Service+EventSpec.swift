@@ -110,14 +110,16 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 		}
 
 		if let eventData = (
-			year.map {
-				try! Foundation.Data(
-					contentsOf: Bundle.module.url(
-						forResource: "\($0)",
-						withExtension: "json"
-					)!,
-					options: []
-				)
+			year.flatMap {
+				Bundle.module.url(
+					forResource: "\($0)",
+					withExtension: "json"
+				).map {
+					try! Foundation.Data(
+						contentsOf: $0,
+						options: []
+					)
+				}
 			}
 		) {
 			return await slugs.asyncMap { slugs in
@@ -140,7 +142,7 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 						slug: slug
 					)?.data.asyncMap { eventData in
 						let event = try? JSONDecoder().decode(Event.self, from: eventData)
-						let placements = span == .upcoming ? [] : await placements(for: slug)
+						let placements = (span == .upcoming || year == 2021) ? [] : await placements(for: slug)
 						return await event.asyncMap { ($0, placements) }
 					}
 				}.compactMap { $0 }
