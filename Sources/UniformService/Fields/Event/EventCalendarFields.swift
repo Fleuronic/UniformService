@@ -20,8 +20,8 @@ import protocol Identity.Identifiable
 public struct EventCalendarFields {
 	public let id: Event.ID
 	public let date: Date
-	public let name: String?
 	public let timeZone: String
+	public let show: ShowCalendarFields?
     public let venue: VenueCalendarFields
     public let slots: [SlotCalendarFields]
 }
@@ -32,8 +32,9 @@ extension EventCalendarFields: EventFields {
 		Self.init,
 		\.id,
 		\.value.date,
-		\.value.name,
 		\.value.timeZone,
+		\.show.id,
+		\.show.value.name,
         \.venue.id,
         \.venue.value.name,
         \.venue.address.id,
@@ -111,8 +112,9 @@ private extension EventCalendarFields {
 	init(
 		id: Event.ID,
 		date: Date,
-		name: String?,
 		timeZone: String,
+		showID: Show.ID,
+		showName: String,
 		venueID: Venue.ID,
 		venueName: String,
 		addressID: Address.ID,
@@ -141,8 +143,12 @@ private extension EventCalendarFields {
 	) {
 		self.id = id
 		self.date = date
-		self.name = name
 		self.timeZone = timeZone
+
+		show = .init(
+			id: showID,
+			name: showName
+		)
 
 		venue = .init(
 			id: venueID,
