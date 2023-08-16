@@ -208,9 +208,12 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 			return await api.fetch(SlotTimePerformancePlacementFields.self, where: Slot.isPartOfEvent(from: events)).asyncFlatMap { fields in
 				let slotIDs = fields.map(\.id)
 				let performanceIDs = fields.compactMap(\.performanceID)
+				let placementIDs = fields.compactMap(\.placementID)
 
 				return await api.delete(Slot.Identified.self, with: slotIDs).asyncMap { _ in
 					await api.delete(Performance.Identified.self, with: performanceIDs)
+				}.asyncMap { _ in
+					await api.delete(Placement.Identified.self, with: placementIDs)
 				}.asyncMap { _ in
 					await api.delete(Diesel.Event.Identified.self, where: Diesel.Event.is(in: events))
 				}.asyncMap { _ in
