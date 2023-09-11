@@ -1,6 +1,7 @@
 // Copyright © Fleuronic LLC. All rights reserved.
 
 import struct Diesel.Event
+import struct Diesel.Show
 import struct Diesel.Location
 import struct Diesel.Slot
 import struct Diesel.Performance
@@ -20,7 +21,7 @@ import protocol Identity.Identifiable
 public struct EventCalendarFields {
 	public let id: Event.ID
 	public let date: Date
-	public let timeZone: String
+	public let timeZone: String?
 	public let show: ShowCalendarFields?
     public let venue: VenueCalendarFields
     public let slots: [SlotCalendarFields]
@@ -112,7 +113,7 @@ private extension EventCalendarFields {
 	init(
 		id: Event.ID,
 		date: Date,
-		timeZone: String,
+		timeZone: String?,
 		showID: Show.ID,
 		showName: String,
 		venueID: Venue.ID,

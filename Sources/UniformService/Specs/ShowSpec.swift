@@ -1,9 +1,9 @@
 // Copyright © Fleuronic LLC. All rights reserved.
 
-import struct Diesel.Division
+import struct Diesel.Show
 
 public protocol ShowSpec {
 	associatedtype ShowResult
 
-	func find(_ show: Show) async -> DivisionResult
+	func find(_ show: Show) async -> ShowResult
 }

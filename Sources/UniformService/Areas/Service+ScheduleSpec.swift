@@ -100,14 +100,16 @@ private extension Service {
 
 		removeExistingEvents(for: year, from: calendar, in: store)
 
-		events.forEach { event in
-			let timeZone = timeZone(for: event.timeZone)
+		for event in events {
+			guard let eventTimeZone = event.timeZone else { continue }
+
+			let timeZone = timeZone(for: eventTimeZone)
 			let notes = notes(for: event, in: timeZone)
 			let (startDate, endDate) = dates(for: event)
 			let calendarEvent = EKEvent(eventStore: store)
 
 			calendarEvent.calendar = calendar
-			calendarEvent.title = event.name!
+			calendarEvent.title = event.show!.name
 			calendarEvent.location = location(for: event.venue)
 			calendarEvent.notes = notes
 			calendarEvent.startDate = startDate

@@ -4,5 +4,5 @@ public protocol EventSpec {
 	associatedtype EventsResult
 
 	func createEvents(for year: Int) async -> EventsResult
-    func updateEvents(current: Bool) async -> EventsResult
+	func updateEvents(for year: Int, current: Bool) async -> EventsResult
 }

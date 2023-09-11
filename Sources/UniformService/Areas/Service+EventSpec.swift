@@ -2,6 +2,7 @@
 
 import enum Uniform.Span
 import struct Diesel.Event
+import struct Diesel.Show
 import struct Diesel.Venue
 import struct Diesel.Location
 import struct Diesel.Address
@@ -25,15 +26,18 @@ import class Foundation.DateFormatter
 import class Foundation.Bundle
 import protocol Caesura.HasuraAPI
 
-extension Service: EventSpec where Self: AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
+extension Service: EventSpec where Self: ShowSpec & AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
 	public func createEvents(for year: Int) async -> APIResult<[Diesel.Event.ID]> {
 		await events(for: year).asyncFlatMap { data in
 			await updateEvents(current: false, data: data)
 		}
 	}
 
-    public func updateEvents(current: Bool) async -> APIResult<[Diesel.Event.ID]> {
-		await eventPlacements(span: current ? .current : .upcoming).asyncFlatMap { data in
+	public func updateEvents(for year: Int, current: Bool) async -> APIResult<[Diesel.Event.ID]> {
+		await eventPlacements(
+			year: year,
+			span: current ? .current : .upcoming
+		).asyncFlatMap { data in
 			await updateEvents(current: current, data: data)
 		}
     }
@@ -41,23 +45,32 @@ extension Service: EventSpec where Self: AddressSpec & VenueSpec & SlotSpec, API
 
 // MARK: -
 private extension Service {
-	typealias EventData = (Diesel.Event, Diesel.Venue, Address, Location, [Slot], [Feature?], [Corps?], [Location?])
+	typealias EventData = (Diesel.Event, Diesel.Show?, Diesel.Venue?, Address?, Location, [Slot], [Feature?], [Corps?], [Location?])
 	typealias EventResult = (Diesel.Event.Identified, [Slot.Identified], [Performance.Identified], [Diesel.Placement.Identified])
 	typealias EventPlacementData = [(Uniform.Event, [Uniform.Placement])]
 
-	func placements(for slug: String) async -> [Uniform.Placement] {
-		await Site(
-			domain: .dci,
-			path: .scores,
-			slug: slug.normalized(from: .events)
-		)?.data.flatMap { data in
+	func placements(
+		slug: String,
+		year: Int,
+		data: Data? = nil
+	) async -> [Uniform.Placement] {
+		await data.map { data in
 			try! JSONDecoder().decode([Uniform.Placement].self, from: data)
-		} ?? []
+		}.asyncMapNil {
+			await Site(
+				domain: .dci,
+				path: .scores,
+				slug: slug.normalized(from: .events),
+				year: year
+			)?.data.flatMap { data in
+				try! JSONDecoder().decode([Uniform.Placement].self, from: data)
+			} ?? []
+		}
 	}
 }
 
 // MARK: -
-private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
+private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
 	func events(for year: Int) async -> APIResult<EventPlacementData> {
 		await eventPlacements(
 			year: year,
@@ -69,16 +82,18 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 	}
 
 	func eventData(for events: [Uniform.Event]) -> [EventData] {
-		events.map { event in
+		events.compactMap { event in
 			event.data(
-				timeFormatter: timeFormatter(timeZone: timeZone(for: event.timeZone)),
+				timeFormatter: event.timeZone.map {
+					timeFormatter(timeZone: timeZone(for: $0))
+				},
 				dateFormatter: dateFormatter
 			)
 		}
 	}
 
 	func eventPlacements(
-		year: Int? = nil,
+		year: Int,
 		span: Span,
 		slugs: [String]? = nil
 	) async -> APIResult<EventPlacementData> {
@@ -110,16 +125,14 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 		}
 
 		if let eventData = (
-			year.flatMap {
-				Bundle.module.url(
-					forResource: "\($0)",
-					withExtension: "json"
-				).map {
-					try! Foundation.Data(
-						contentsOf: $0,
-						options: []
-					)
-				}
+			Bundle.module.url(
+				forResource: "\(year)",
+				withExtension: "json"
+			).map { url in
+				try! Foundation.Data(
+					contentsOf: url,
+					options: []
+				)
 			}
 		) {
 			return await slugs.asyncMap { slugs in
@@ -129,20 +142,31 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 						$0.slug < $1.slug
 					},
 					slugs.asyncMap { slug in
-						await placements(for: slug)
+						await placements(
+							slug: slug,
+							year: year
+						)
 					}
 				)
 			}.map(Array.init)
 		} else {
 			return await slugs.asyncMap { slugs in
 				await slugs.asyncCompactMap { slug in
-					await Site(
+					let site = await Site(
 						domain: .dci,
 						path: .events,
-						slug: slug
-					)?.data.asyncMap { eventData in
+						slug: slug,
+						year: year
+					)
+
+					return await site?.data.asyncMap { eventData in
 						let event = try? JSONDecoder().decode(Event.self, from: eventData)
-						let placements = (span == .upcoming || year == 2021) ? [] : await placements(for: slug)
+						let placements = (span == .upcoming || year == 2021) ? [] : await placements(
+							slug: slug,
+							year: year,
+							data: year <= 2017 ? site?.data(at: .scores) : nil
+						)
+						
 						return await event.asyncMap { ($0, placements) }
 					}
 				}.compactMap { $0 }
@@ -154,33 +178,63 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
         data: EventData,
 		placements: [Uniform.Placement]
     ) async -> APIResult<EventResult> {
-        let (event, venue, address, location, slots, slotFeatures, slotCorps, slotLocations) = data
-        return await find(location).asyncFlatMap { location in
-            await find(address, in: location).asyncFlatMap { address in
-                await find(venue, at: address).asyncFlatMap { venue in
-                    let event = event.identified(
-                        location: location,
-                        venue: venue
-                    )
-                    
-                    return await slotsResult(
-                        event: event,
-                        slots: slots,
-                        slotFeatures: slotFeatures,
-                        slotCorps: slotCorps,
-                        slotLocations: slotLocations,
-                        placements: placements
-                    ).map { data in
-                        (
-                            event: event,
-                            slots: data.map(\.0),
-                            performances: data.compactMap(\.1),
-                            placements: data.compactMap(\.2)
-                        )
-                    }
-                }
-            }
-        }
+		let result: APIResult<Diesel.Event.Identified>
+        let (event, show, venue, address, location, slots, slotFeatures, slotCorps, slotLocations) = data
+
+		if let address, let show, let venue {
+			result = await find(location).asyncFlatMap { location in
+				await find(address, in: location).asyncFlatMap { address in
+					await find(show).asyncFlatMap { show in
+						await find(venue, at: address).asyncMap { venue in
+							event.identified(
+								show: show,
+								location: location,
+								venue: venue
+							)
+						}
+					}
+				}
+			}
+		} else {
+			result = await find(location).asyncFlatMap { location in
+				await show.asyncMap { show in
+					await find(show).asyncMap { show in
+						event.identified(
+							show: show,
+							location: location,
+							venue: nil
+						)
+					}
+				} ?? .success(
+					event.identified(
+						show: nil,
+						location: location,
+						venue: nil
+					)
+				)
+			}
+		}
+
+		let count = placements.count
+		let hasSlots = !slots.isEmpty
+
+		return await result.asyncFlatMap { event in
+			await slotsResult(
+				event: event,
+				slots: hasSlots ? slots : .init(repeating: .init(time: nil), count: count),
+				slotFeatures: hasSlots ? slotFeatures : .init(repeating: nil, count: count),
+				slotCorps: hasSlots ? slotCorps : placements.map(\.groupName).map(Corps.init),
+				slotLocations: hasSlots ? slotLocations : .init(repeating: nil, count: count),
+				placements: placements
+			).map { data in
+				(
+					event: event,
+					slots: data.map(\.0),
+					performances: data.compactMap(\.1),
+					placements: data.compactMap(\.2)
+				)
+			}
+		}
     }
 
 	func updateEvents(
@@ -235,35 +289,43 @@ private extension Service where Self: AddressSpec & VenueSpec & SlotSpec, API: H
 // MARK: -
 private extension Uniform.Event {
 	func data(
-		timeFormatter: DateFormatter,
+		timeFormatter: DateFormatter?,
 		dateFormatter: DateFormatter
 	) -> Service.EventData {
 		(
 			.init(
-				name: name,
 				slug: slug,
 				date: dateFormatter.date(from: startDate)!,
 				timeZone: timeZone
 			),
 			.init(
-				name: venueName.replacingOccurrences(of: "\"", with: "")
+				name: name
 			),
-			.init(
-				streetAddress: venueAddress,
-				zipCode: venueZIP ?? .inserted(for: venueAddress, from: .addresses)!
-			),
+			venueName.map { name in
+				.init(
+					name: name.replacingOccurrences(of: "\"", with: "")
+				)
+			},
+			venueAddress.map { streetAddress in
+				.init(
+					streetAddress: streetAddress,
+					zipCode: venueZIP ?? .inserted(for: streetAddress, from: .addresses)!
+				)
+			},
 			.init(
 				city: venueCity,
 				state: venueState
 			),
-			schedules?.map { slot in
-				.init(time: slot.time.flatMap(timeFormatter.date)?.timeIntervalSinceReferenceDate)
+			schedules?.compactMap { slot in
+				timeFormatter.map {
+					.init(time: slot.time.flatMap($0.date)?.timeIntervalSinceReferenceDate)
+				}
 			} ?? [],
 			schedules?.map(\.feature) ?? [],
 			schedules?.map(\.corps) ?? [],
 			schedules?.map { schedule in
 				schedule.displayCity.map { city in
-					var components = city.normalized(from: .locations).components(separatedBy: ", ")
+					var components = city.components(separatedBy: ", ")
 					if components.count == 1 {
 						components.append(.inserted(for: components[0], from: .locations)!)
 					}

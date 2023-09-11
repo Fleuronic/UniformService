@@ -1,8 +1,9 @@
 // Copyright © Fleuronic LLC. All rights reserved.
 
+import struct Schemata.Projection
 import struct Diesel.Address
 import struct Diesel.Location
-import struct Schemata.Projection
+import struct DieselService.LocationBaseFields
 import protocol DieselService.AddressFields
 import protocol Identity.Identifiable
 
@@ -10,7 +11,7 @@ public struct AddressCalendarFields {
     public let id: Address.ID
     public let streetAddress: String
     public let zipCode: String
-    public let location: LocationCalendarFields
+    public let location: LocationBaseFields
 }
 
 // MARK: -

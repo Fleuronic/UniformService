@@ -51,7 +51,7 @@ extension Service: SlotSpec where
         slotCorps: [Corps?],
         slotLocations: [Location?],
         placements: [Placement]
-    ) async -> API.Result<[SlotPerformancePlacementData]> {
+    ) async -> APIResult<[SlotPerformancePlacementData]> {
         await zip(slots, zip(slotLocations, zip(slotFeatures, slotCorps))).asyncFlatMap { slot, locationFeatureCorps in
             let (location, featureCorps) = locationFeatureCorps
             let (feature, corps) = featureCorps
@@ -64,7 +64,11 @@ extension Service: SlotSpec where
                             (corps, corpsName)
                         }
                     }
-                }
+				}.asyncMapNil {
+					await find(corps, from: nil).map { corps -> CorpsData in
+						(corps, corpsName)
+					}
+				}
             } ?? .success(nil)
 
             return await corpsResult.asyncFlatMap { data in

@@ -1,9 +1,9 @@
 // Copyright © Fleuronic LLC. All rights reserved.
 
+import struct Schemata.Projection
 import struct Diesel.Feature
 import struct Diesel.Corps
 import struct Diesel.Location
-import struct Schemata.Projection
 import protocol DieselService.FeatureFields
 import protocol Identity.Identifiable
 

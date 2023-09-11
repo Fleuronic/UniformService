@@ -1,11 +1,12 @@
 // Copyright © Fleuronic LLC. All rights reserved.
 
+import struct Schemata.Projection
 import struct Diesel.Performance
 import struct Diesel.Corps
 import struct Diesel.Placement
 import struct Diesel.Location
 import struct Diesel.Division
-import struct Schemata.Projection
+import struct DieselService.CorpsNameLocationFields
 import protocol DieselService.PerformanceFields
 import protocol Identity.Identifiable
 
