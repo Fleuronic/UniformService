@@ -303,7 +303,8 @@ private extension Uniform.Event {
 			),
 			venueName.map { name in
 				.init(
-					name: name.replacingOccurrences(of: "\"", with: "")
+					name: name.replacingOccurrences(of: "\"", with: ""),
+					host: venueHost
 				)
 			},
 			venueAddress.map { streetAddress in
