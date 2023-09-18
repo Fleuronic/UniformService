@@ -10,6 +10,7 @@ import protocol Identity.Identifiable
 public struct VenueCalendarFields {
     public let id: Venue.ID
     public let name: String
+	public let host: String?
     public let address: AddressCalendarFields
 }
 
@@ -20,6 +21,7 @@ extension VenueCalendarFields: VenueFields {
         Self.init,
         \.id,
         \.value.name,
+		\.value.host,
         \.address.id,
         \.address.value.streetAddress,
         \.address.value.zipCode,
@@ -34,6 +36,7 @@ private extension VenueCalendarFields {
     init(
         id: Venue.ID,
         name: String,
+		host: String?,
         addressID: Address.ID,
         streetAddress: String,
         zipCode: String,
@@ -43,6 +46,7 @@ private extension VenueCalendarFields {
     ) {
         self.id = id
         self.name = name
+		self.host = host
 
         address = .init(
             id: addressID,

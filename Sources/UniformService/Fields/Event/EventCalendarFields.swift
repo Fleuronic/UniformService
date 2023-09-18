@@ -38,6 +38,7 @@ extension EventCalendarFields: EventFields {
 		\.show.value.name,
         \.venue.id,
         \.venue.value.name,
+		\.venue.value.host,
         \.venue.address.id,
         \.venue.address.value.streetAddress,
         \.venue.address.value.zipCode,
@@ -118,6 +119,7 @@ private extension EventCalendarFields {
 		showName: String,
 		venueID: Venue.ID,
 		venueName: String,
+		venueHost: String?,
 		addressID: Address.ID,
 		streetAddress: String,
 		zipCode: String,
@@ -154,6 +156,7 @@ private extension EventCalendarFields {
 		venue = .init(
 			id: venueID,
 			name: venueName,
+			host: venueHost,
 			address: .init(
 				id: addressID,
 				streetAddress: streetAddress,

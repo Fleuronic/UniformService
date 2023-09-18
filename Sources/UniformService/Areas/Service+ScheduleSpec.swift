@@ -29,9 +29,10 @@ private extension Service {
 	func location(for venue: VenueCalendarFields) -> String {
 		[
 			venue.name,
+			venue.host,
 			venue.address.streetAddress,
 			"\(venue.address.location.city), \(venue.address.location.state) \(venue.address.zipCode)"
-		].joined(separator: "\n")
+		].compactMap { $0 }.joined(separator: "\n")
 	}
 
 	func notes(for event: EventCalendarFields, in timeZone: TimeZone) -> String {
