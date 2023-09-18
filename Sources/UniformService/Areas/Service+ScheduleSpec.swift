@@ -91,9 +91,11 @@ private extension Service {
 	}
 
 	func createSchedule(for events: [EventCalendarFields], from year: Int) async {
-		_ = try! await EKEventStore().requestAccess(to: .event)
+		guard #available(macOS 14.0, *) else { return }
 
 		let store = EKEventStore()
+		_ = try! await store.requestFullAccessToEvents()
+
 		let calendar = store.calendars(for: .event).filter { $0.title == "Drum Corps" }.first!
 		let events = events.filter { event in
 			Calendar.current.component(.year, from: event.date) == year
