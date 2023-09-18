@@ -7,7 +7,7 @@ import struct DieselService.IdentifiedAddress
 import struct DieselService.IdentifiedLocation
 
 public protocol VenueSpec {
-    associatedtype VenueResult
+	associatedtype VenueResult
 
 	func find(_ venue: Venue, at address: Address.Identified) async -> VenueResult
 }

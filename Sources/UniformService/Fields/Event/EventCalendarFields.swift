@@ -23,8 +23,8 @@ public struct EventCalendarFields {
 	public let date: Date
 	public let timeZone: String?
 	public let show: ShowCalendarFields?
-    public let venue: VenueCalendarFields
-    public let slots: [SlotCalendarFields]
+	public let venue: VenueCalendarFields
+	public let slots: [SlotCalendarFields]
 }
 
 extension EventCalendarFields: EventFields {
@@ -36,15 +36,15 @@ extension EventCalendarFields: EventFields {
 		\.value.timeZone,
 		\.show.id,
 		\.show.value.name,
-        \.venue.id,
-        \.venue.value.name,
+		\.venue.id,
+		\.venue.value.name,
 		\.venue.value.host,
-        \.venue.address.id,
-        \.venue.address.value.streetAddress,
-        \.venue.address.value.zipCode,
-        \.venue.address.location.id,
-        \.venue.address.location.value.city,
-        \.venue.address.location.value.state,
+		\.venue.address.id,
+		\.venue.address.value.streetAddress,
+		\.venue.address.value.zipCode,
+		\.venue.address.location.id,
+		\.venue.address.location.value.city,
+		\.venue.address.location.value.state,
 		\.slots.id,
 		\.slots.value.time,
 		\.slots.performance.id,

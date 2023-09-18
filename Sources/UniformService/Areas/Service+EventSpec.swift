@@ -40,7 +40,7 @@ extension Service: EventSpec where Self: ShowSpec & AddressSpec & VenueSpec & Sl
 		).asyncFlatMap { data in
 			await updateEvents(current: current, data: data)
 		}
-    }
+	}
 }
 
 // MARK: -
@@ -166,7 +166,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 							year: year,
 							data: year <= 2017 ? site?.data(at: .scores) : nil
 						)
-						
+
 						return await event.asyncMap { ($0, placements) }
 					}
 				}.compactMap { $0 }
@@ -174,12 +174,12 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 		}
 	}
 
-    func eventResult(
-        data: EventData,
+	func eventResult(
+		data: EventData,
 		placements: [Uniform.Placement]
-    ) async -> APIResult<EventResult> {
+	) async -> APIResult<EventResult> {
 		let result: APIResult<Diesel.Event.Identified>
-        let (event, show, venue, address, location, slots, slotFeatures, slotCorps, slotLocations) = data
+		let (event, show, venue, address, location, slots, slotFeatures, slotCorps, slotLocations) = data
 
 		if let address, let show, let venue {
 			result = await find(location).asyncFlatMap { location in
@@ -235,7 +235,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 				)
 			}
 		}
-    }
+	}
 
 	func updateEvents(
 		current: Bool,

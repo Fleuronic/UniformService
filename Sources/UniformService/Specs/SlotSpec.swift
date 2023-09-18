@@ -12,24 +12,24 @@ import struct DieselService.IdentifiedPlacement
 import struct DieselService.IdentifiedEvent
 
 public protocol SlotSpec {
-    associatedtype SlotData
-    associatedtype Placements
-    associatedtype SlotResult
-    associatedtype SlotsResult
-    
-    func slotResult(
-        data: SlotData,
-        event: Event.Identified,
-        slot: Slot,
-        feature: Feature?
-    ) async -> SlotResult
+	associatedtype SlotData
+	associatedtype Placements
+	associatedtype SlotResult
+	associatedtype SlotsResult
 
-    func slotsResult(
-        event: Event.Identified,
-        slots: [Slot],
-        slotFeatures: [Feature?],
-        slotCorps: [Corps?],
-        slotLocations: [Location?],
-        placements: Placements
-    ) async -> SlotsResult
+	func slotResult(
+		data: SlotData,
+		event: Event.Identified,
+		slot: Slot,
+		feature: Feature?
+	) async -> SlotResult
+
+	func slotsResult(
+		event: Event.Identified,
+		slots: [Slot],
+		slotFeatures: [Feature?],
+		slotCorps: [Corps?],
+		slotLocations: [Location?],
+		placements: Placements
+	) async -> SlotsResult
 }

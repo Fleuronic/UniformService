@@ -3,7 +3,7 @@
 import struct Diesel.Division
 
 public protocol DivisionSpec {
-    associatedtype DivisionResult
+	associatedtype DivisionResult
 
-    func find(_ division: Division) async -> DivisionResult
+	func find(_ division: Division) async -> DivisionResult
 }

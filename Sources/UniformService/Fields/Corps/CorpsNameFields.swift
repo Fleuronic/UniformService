@@ -7,8 +7,8 @@ import protocol DieselService.CorpsFields
 import protocol Identity.Identifiable
 
 public struct CorpsNameFields {
-    public let id: Corps.ID
-    public let name: String
+	public let id: Corps.ID
+	public let name: String
 
 	public init(
 		id: Corps.ID,
@@ -21,10 +21,10 @@ public struct CorpsNameFields {
 
 // MARK: -
 extension CorpsNameFields: CorpsFields {
-    // MARK: ModelProjection
-    public static let projection = Projection<Corps.Identified, Self>(
-        Self.init,
-        \.id,
-        \.value.name
-    )
+	// MARK: ModelProjection
+	public static let projection = Projection<Corps.Identified, Self>(
+		Self.init,
+		\.id,
+		\.value.name
+	)
 }
