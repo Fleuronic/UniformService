@@ -48,10 +48,10 @@
     {
       "identity" : "diesel",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Fleuronic/Diesel",
+      "location" : "https://github.com/Fleuronic/Diesel.git",
       "state" : {
         "branch" : "main",
-        "revision" : "1ea935ca10ec4c82b5705691cb7c834f57ed0f54"
+        "revision" : "f3256c6e4a6e254b838e80b54201dbbd0851bd67"
       }
     },
     {
@@ -60,7 +60,7 @@
       "location" : "https://github.com/Fleuronic/DieselService",
       "state" : {
         "branch" : "main",
-        "revision" : "f90074259bc821fb566dd3ed55fb631829c1e813"
+        "revision" : "726730ed879a7a92d3c0883b4698f8e43676fcda"
       }
     },
     {
@@ -105,7 +105,7 @@
       "location" : "https://github.com/Fleuronic/Schemata",
       "state" : {
         "branch" : "master",
-        "revision" : "103895ce834495061e9d059ea429091842527e96"
+        "revision" : "15a11bd95cd8e3f4459d7d3531c6b89bfbed5dc9"
       }
     },
     {
@@ -123,7 +123,16 @@
       "location" : "https://github.com/Fleuronic/Uniform",
       "state" : {
         "branch" : "main",
-        "revision" : "c1304278b82d2e72c198033d5b5d2ed03a60ab9b"
+        "revision" : "df572611b196a50c86659348455ad75395f32b9e"
+      }
+    },
+    {
+      "identity" : "yams",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jpsim/Yams",
+      "state" : {
+        "revision" : "0d9ee7ea8c4ebd4a489ad7a73d5c6cad55d6fed3",
+        "version" : "5.0.6"
       }
     }
   ],
