@@ -125,15 +125,6 @@
         "branch" : "main",
         "revision" : "c1304278b82d2e72c198033d5b5d2ed03a60ab9b"
       }
-    },
-    {
-      "identity" : "yamlswift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/behrang/YamlSwift",
-      "state" : {
-        "revision" : "287f5cab7da0d92eb947b5fd8151b203ae04a9a3",
-        "version" : "3.4.4"
-      }
     }
   ],
   "version" : 2
