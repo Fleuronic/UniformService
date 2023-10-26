@@ -51,7 +51,7 @@ private extension PerformanceCalendarFields {
 		divisionName: String
 	) {
 		self.id = id
-
+		
 		corps = .init(
 			id: corpsID,
 			name: name,
@@ -61,7 +61,7 @@ private extension PerformanceCalendarFields {
 				state: state
 			)
 		)
-
+		
 		placement = .init(
 			id: placementID,
 			rank: rank,

@@ -67,7 +67,7 @@ private extension SlotCalendarFields {
 	) {
 		self.id = id
 		self.time = time
-
+		
 		performance = .init(
 			id: performanceID,
 			corps: .init(
@@ -89,7 +89,7 @@ private extension SlotCalendarFields {
 				)
 			)
 		)
-
+		
 		feature = .init(
 			id: featureID,
 			name: featureName,

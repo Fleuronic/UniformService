@@ -47,7 +47,7 @@ private extension VenueCalendarFields {
 		self.id = id
 		self.name = name
 		self.host = host
-
+		
 		address = .init(
 			id: addressID,
 			streetAddress: streetAddress,

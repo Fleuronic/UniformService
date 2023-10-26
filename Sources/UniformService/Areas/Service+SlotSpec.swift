@@ -38,7 +38,7 @@ extension Service: SlotSpec where
 		}.map(Result.success) ?? .success(
 			slot.identified(event: event)
 		)
-
+		
 		return result.map { slot in
 			return (slot, performance, placement)
 		}
@@ -55,7 +55,7 @@ extension Service: SlotSpec where
 		await zip(slots, zip(slotLocations, zip(slotFeatures, slotCorps))).asyncFlatMap { slot, locationFeatureCorps in
 			let (location, featureCorps) = locationFeatureCorps
 			let (feature, corps) = featureCorps
-
+			
 			let corpsResult = await corps.asyncFlatMap { corps in
 				let corpsName = corps.name
 				return await location.asyncMap { location in
@@ -70,7 +70,7 @@ extension Service: SlotSpec where
 					}
 				}
 			} ?? .success(nil)
-
+			
 			return await corpsResult.asyncFlatMap { data in
 				await performanceResult(
 					data: data,

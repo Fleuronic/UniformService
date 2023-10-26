@@ -22,7 +22,7 @@ private extension Service {
 		let endTime = times.count > 2 ? times.max()! : .tenPM
 		let startDate = Date(date: event.date, startTime: startTime)
 		let endDate = startDate.addingTimeInterval(endTime - startTime)
-
+		
 		return (startDate, endDate)
 	}
 
@@ -50,9 +50,9 @@ private extension Service {
 			guard let placements, let performances else { return nil }
 			return (placements, performances)
 		}
-
+		
 		guard !grouping.isEmpty else { return nil }
-
+		
 		let results = Dictionary(grouping: grouping, by: \.0.division.name).sorted { $0.key > $1.key }
 		return "Results:\n" + results.map { divisionName, placements in
 			let sortedPlacements = placements.sorted { $0.0.rank < $1.0.rank }
@@ -60,7 +60,7 @@ private extension Service {
 				let score = String(format: "%.3f", placement.0.score)
 				return "\(placement.0.rank). \(placement.1.corps.name) (\(score))"
 			}
-
+			
 			return ([divisionName] + placementStrings).joined(separator: "\n")
 		}.joined(separator: "\n\n") + "\n"
 	}
@@ -74,14 +74,14 @@ private extension Service {
 			.sorted { $0.performance!.corps.name < $1.performance!.corps.name }
 		let slots = timeSlots + tbdSlots
 		let timeFormatter = timeFormatter(timeZone: timeZone)
-
+		
 		return "Schedule:\n" + slots.map { slot in
 			let corps = slot.performance?.corps
 			let feature = slot.feature
 			let timeString = slot.time.map {
 				timeFormatter.string(from: .init(timeIntervalSinceReferenceDate: $0))
 			} ?? "TBD"
-
+			
 			return corps.map {
 				"\(timeString): \($0.name) (\($0.location.city), \($0.location.state))"
 			} ?? feature.map {
@@ -92,25 +92,25 @@ private extension Service {
 
 	func createSchedule(for events: [EventCalendarFields], from year: Int) async {
 		guard #available(macOS 14.0, *) else { return }
-
+		
 		let store = EKEventStore()
 		_ = try! await store.requestFullAccessToEvents()
-
+		
 		let calendar = store.calendars(for: .event).filter { $0.title == "Drum Corps" }.first!
 		let events = events.filter { event in
 			Calendar.current.component(.year, from: event.date) == year
 		}
-
+		
 		removeExistingEvents(for: year, from: calendar, in: store)
-
+		
 		for event in events {
 			guard let eventTimeZone = event.timeZone else { continue }
-
+			
 			let timeZone = timeZone(for: eventTimeZone)
 			let notes = notes(for: event, in: timeZone)
 			let (startDate, endDate) = dates(for: event)
 			let calendarEvent = EKEvent(eventStore: store)
-
+			
 			calendarEvent.calendar = calendar
 			calendarEvent.title = event.show!.name
 			calendarEvent.location = location(for: event.venue)
@@ -118,7 +118,7 @@ private extension Service {
 			calendarEvent.startDate = startDate
 			calendarEvent.endDate = endDate
 			calendarEvent.timeZone = timeZone
-
+			
 			try! store.save(calendarEvent, span: .thisEvent)
 		}
 	}

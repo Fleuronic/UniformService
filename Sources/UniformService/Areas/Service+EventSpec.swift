@@ -103,7 +103,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 					let date: Date
 					let times = event.slots.compactMap(\.time).sorted()
 					let needsPlacements = event.slots.compactMap(\.placementID).isEmpty
-
+					
 					if times.count < 2 {
 						date = event.date
 					} else if span == .current {
@@ -111,7 +111,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 					} else {
 						date = Date(date: event.date, startTime: times[1])
 					}
-
+					
 					switch span {
 					case .season:
 						return true
@@ -123,7 +123,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 				}.compactMap(\.slug)
 			}
 		}
-
+		
 		if let eventData = (
 			Bundle.module.url(
 				forResource: "\(year)",
@@ -158,7 +158,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 						slug: slug,
 						year: year
 					)
-
+					
 					return await site?.data.asyncMap { eventData in
 						let event = try? JSONDecoder().decode(Event.self, from: eventData)
 						let placements = (span == .upcoming || year == 2021) ? [] : await placements(
@@ -166,7 +166,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 							year: year,
 							data: year <= 2017 ? site?.data(at: .scores) : nil
 						)
-
+						
 						return await event.asyncMap { ($0, placements) }
 					}
 				}.compactMap { $0 }
@@ -214,10 +214,10 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 				)
 			}
 		}
-
+		
 		let count = placements.count
 		let hasSlots = !slots.isEmpty
-
+		
 		return await result.asyncFlatMap { event in
 			await slotsResult(
 				event: event,
@@ -253,19 +253,19 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 			let data = current ? (data.enumerated().filter {
 				Set(data.enumerated().filter { !$0.1.3.isEmpty }.map(\.0)).contains($0.0)
 			}).map(\.1) : data
-
+			
 			let events = data.map(\.0)
 			let slots = data.flatMap(\.1)
 			let performances = data.flatMap(\.2)
 			let placements = data.flatMap(\.3)
-
+			
 			guard !events.isEmpty, !(current && placements.isEmpty) else { return .success([]) }
-
+			
 			return await api.fetch(SlotTimePerformancePlacementFields.self, where: Slot.isPartOfEvent(from: events)).asyncFlatMap { fields in
 				let slotIDs = fields.map(\.id)
 				let performanceIDs = fields.compactMap(\.performanceID)
 				let placementIDs = fields.compactMap(\.placementID)
-
+				
 				return await api.delete(Slot.Identified.self, with: slotIDs).asyncMap { _ in
 					await api.delete(Performance.Identified.self, with: performanceIDs)
 				}.asyncMap { _ in
@@ -330,7 +330,7 @@ private extension Uniform.Event {
 					if components.count == 1 {
 						components.append(.inserted(for: components[0], from: .locations)!)
 					}
-
+					
 					return .init(
 						city: components[0],
 						state: components[1]

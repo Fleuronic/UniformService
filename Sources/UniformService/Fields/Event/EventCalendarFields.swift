@@ -27,6 +27,7 @@ public struct EventCalendarFields {
 	public let slots: [SlotCalendarFields]
 }
 
+// MARK: -
 extension EventCalendarFields: EventFields {
 	// MARK: ModelProjection
 	public static let projection = Projection<Event.Identified, Self>(
@@ -147,12 +148,12 @@ private extension EventCalendarFields {
 		self.id = id
 		self.date = date
 		self.timeZone = timeZone
-
+		
 		show = .init(
 			id: showID,
 			name: showName
 		)
-
+		
 		venue = .init(
 			id: venueID,
 			name: venueName,
@@ -168,7 +169,7 @@ private extension EventCalendarFields {
 				)
 			)
 		)
-
+		
 		slots = slotIDs.enumerated().map { index, id in
 			.init(
 				id: id,

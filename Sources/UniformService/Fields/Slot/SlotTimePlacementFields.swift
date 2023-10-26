@@ -35,7 +35,7 @@ extension SlotTimePlacementFields: Decodable {
 		let container = try decoder.container(keyedBy: Model.CodingKeys.self)
 		id = try container.decode(Slot.ID.self, forKey: .id)
 		time = try container.decodeIfPresent(TimeInterval.self, forKey: .time)
-
+		
 		let performanceContainer = try? container.nestedContainer(keyedBy: Performance.CodingKeys.self, forKey: .performance)
 		let placementContainer = try? performanceContainer?.nestedContainer(keyedBy: IDCodingKeys.self, forKey: .placement)
 		placementID = try placementContainer?.decodeIfPresent(Placement.ID.self, forKey: .id)

@@ -41,7 +41,7 @@ private extension AddressCalendarFields {
 		self.id = id
 		self.streetAddress = streetAddress
 		self.zipCode = zipCode
-
+		
 		location = .init(
 			id: locationID,
 			city: city,

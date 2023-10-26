@@ -23,7 +23,7 @@ public struct Service<API: Catenary.API, Database: Catenoid.Database> where Data
 	) {
 		self.api = api
 		self.database = database
-
+		
 		dateFormatter = DateFormatter()
 		dateFormatter.dateFormat = "YYYY-MM-dd"
 	}
