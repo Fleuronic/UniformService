@@ -7,17 +7,17 @@ import struct Diesel.Performance
 import struct Diesel.Location
 import struct Diesel.Placement
 import struct Diesel.Division
+import struct Catena.IDFields
 import struct Schemata.Projection
 import struct Foundation.TimeInterval
-import enum Catenary.IDCodingKeys
-import protocol DieselService.SlotFields
 import protocol Identity.Identifiable
+import protocol DieselService.SlotFields
 
 public struct SlotTimePerformancePlacementFields {
 	public let id: Slot.ID
 	public let time: TimeInterval?
-	public let performanceID: Performance.ID?
-	public let placementID: Placement.ID?
+	public let performance: IDFields<Performance.Identified>?
+	public let placement: IDFields<Placement.Identified>?
 }
 
 // MARK: -
@@ -32,24 +32,18 @@ extension SlotTimePerformancePlacementFields: SlotFields {
 	)
 }
 
-extension SlotTimePerformancePlacementFields: Decodable {
-	public init(from decoder: Decoder) throws {
-		let container = try decoder.container(keyedBy: Model.CodingKeys.self)
-		id = try container.decode(Slot.ID.self, forKey: .id)
-		time = try container.decodeIfPresent(TimeInterval.self, forKey: .time)
-		
-		let performanceContainer = try? container.nestedContainer(keyedBy: Performance.CodingKeys.self, forKey: .performance)
-		performanceID = try performanceContainer?.decodeIfPresent(Performance.ID.self, forKey: .id)
-		
-		let placementContainer = try? performanceContainer?.nestedContainer(keyedBy: IDCodingKeys.self, forKey: .placement)
-		placementID = try placementContainer?.decodeIfPresent(Placement.ID.self, forKey: .id)
-	}
-}
-
 // MARK: -
-private extension Performance {
-	enum CodingKeys: String, CodingKey {
-		case id
-		case placement
+private extension SlotTimePerformancePlacementFields {
+	init(
+		id: Slot.ID,
+		time: TimeInterval?,
+		performanceID: Performance.ID?,
+		placementID: Placement.ID?
+	) {
+		self.id = id
+		self.time = time
+		
+		performance = performanceID.map { .init(id: $0) }
+		placement = placementID.map { .init(id: $0) }
 	}
 }

@@ -69,7 +69,7 @@ private extension EventDateSlugSlotsFields {
 			.init(
 				id: id,
 				time: slotTimes[index],
-				placementID: placementIDs[index]
+				placement: placementIDs[index].map { .init(id: $0) }
 			)
 		}
 	}
