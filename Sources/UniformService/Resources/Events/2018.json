@@ -2642,7 +2642,7 @@
 		"venue": {
 			"name": "Cranston Stadium",
 			"address": "9 Flint Ave.",
-			"zioPostcode": "2910",
+			"zioPostcode": "02910",
 			"longitude": -71.446203,
 			"latitude": 41.783985,
 			"googleMapsStaticMap": "https:\u002F\u002Fweb.archive.org\u002Fweb\u002F20180918143927\u002Fhttps:\u002F\u002Fmaps.googleapis.com\u002Fmaps\u002Fapi\u002Fstaticmap?zoom=12&size=469x307&size=469x307&key=AIzaSyB8Ub9wVgdhPPkEVnVtm6qdgLemJOAHw78&maptype=roadmap&markers=color:red|label:C|41.783985,-71.446203&signature=JWu_xcvEJI0uZ27vWy72-kgiUx0="
@@ -5937,7 +5937,7 @@
 		"eDTStartTimeForAPI": "2018-07-15T01:30:00.000+0000",
 		"venue": {
 			"name": "Valhalla High School Stadium",
-			"address": "1725 HIllsdale Road E.",
+			"address": "1725 Hillsdale Road E.",
 			"zioPostcode": "92019",
 			"longitude": -116.921222,
 			"latitude": 32.76118,
@@ -6375,7 +6375,7 @@
 		"venue": {
 			"name": "College Boulevard Activity Center",
 			"address": "11031 S. Valley Pkwy.",
-			"zioPostcode": "",
+			"zioPostcode": "66061",
 			"longitude": -94.837199,
 			"latitude": 38.930131,
 			"googleMapsStaticMap": "https:\u002F\u002Fweb.archive.org\u002Fweb\u002F20180918143927\u002Fhttps:\u002F\u002Fmaps.googleapis.com\u002Fmaps\u002Fapi\u002Fstaticmap?zoom=12&size=469x307&size=469x307&key=AIzaSyB8Ub9wVgdhPPkEVnVtm6qdgLemJOAHw78&maptype=roadmap&markers=color:red|label:C|38.930131,-94.837199&signature=s_i-ZnGa29020tCuzvEPFsTXXsM="
