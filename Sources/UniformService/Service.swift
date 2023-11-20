@@ -11,22 +11,12 @@ import struct Foundation.TimeZone
 import class Foundation.DateFormatter
 import protocol Catenary.API
 import protocol Catenoid.Database
+import protocol DieselService.EventFields
 
 public struct Service<API: Catenary.API, Database: Catenoid.Database> where Database.Store == Store<ReadWrite> {
 	let api: API
 	let database: Database
 	let dateFormatter: DateFormatter
-
-	public init(
-		api: API,
-		database: Database
-	) {
-		self.api = api
-		self.database = database
-		
-		dateFormatter = DateFormatter()
-		dateFormatter.dateFormat = "YYYY-MM-dd"
-	}
 }
 
 // MARK: -
@@ -36,6 +26,17 @@ public extension Service {
 	typealias CorpsData = (Corps.Identified, String)?
 	typealias SlotPerformancePlacementData = (Slot.Identified, Performance.Identified?, Placement.Identified?)
 	typealias CorpsPerformancePlacementData = (Corps.Identified?, Performance.Identified?, Placement.Identified?)
+
+	init(
+		api: API,
+		database: Database
+	) {
+		self.api = api
+		self.database = database
+
+		dateFormatter = DateFormatter()
+		dateFormatter.dateFormat = "YYYY-MM-dd"
+	}
 
 	func timeZone(for abbreviation: String) -> TimeZone {
 		.init(abbreviation: abbreviation.replacingOccurrences(of: "T", with: "DT"))!

@@ -102,7 +102,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 				events.filter { event in
 					let date: Date
 					let times = event.slots.compactMap(\.time).sorted()
-					let needsPlacements = event.slots.compactMap(\.placementID).isEmpty
+					let needsPlacements = event.slots.compactMap(\.placement).isEmpty
 					
 					if times.count < 2 {
 						date = event.date
@@ -263,9 +263,9 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 			
 			return await api.fetch(SlotTimePerformancePlacementFields.self, where: Slot.isPartOfEvent(from: events)).asyncFlatMap { fields in
 				let slotIDs = fields.map(\.id)
-				let performanceIDs = fields.compactMap(\.performanceID)
-				let placementIDs = fields.compactMap(\.placementID)
-				
+				let performanceIDs = fields.compactMap(\.performance?.id)
+				let placementIDs = fields.compactMap(\.placement?.id)
+
 				return await api.delete(Slot.Identified.self, with: slotIDs).asyncMap { _ in
 					await api.delete(Performance.Identified.self, with: performanceIDs)
 				}.asyncMap { _ in
@@ -310,7 +310,7 @@ private extension Uniform.Event {
 			venueAddress.map { streetAddress in
 				.init(
 					streetAddress: streetAddress,
-					zipCode: venueZIP ?? .inserted(for: streetAddress, from: .addresses)!
+					zipCode: .inserted(for: streetAddress, from: .addresses) ?? venueZIP!
 				)
 			},
 			.init(
