@@ -18,11 +18,12 @@ import struct Uniform.Schedule
 import struct Uniform.Site
 import struct Foundation.URL
 import struct Foundation.Date
-import struct Foundation.Data
 import struct Foundation.TimeInterval
+import struct Foundation.Data
 import class Foundation.JSONDecoder
 import class Foundation.URLSession
 import class Foundation.DateFormatter
+import class Foundation.ISO8601DateFormatter
 import class Foundation.Bundle
 import protocol Caesura.HasuraAPI
 
@@ -55,7 +56,7 @@ private extension Service {
 		data: Data? = nil
 	) async -> [Uniform.Placement] {
 		await data.map { data in
-			try! JSONDecoder().decode([Uniform.Placement].self, from: data)
+			try! api.decoder.decode([Uniform.Placement].self, from: data)
 		}.asyncMapNil {
 			await Site(
 				domain: .dci,
@@ -63,7 +64,7 @@ private extension Service {
 				slug: slug.normalized(from: .events),
 				year: year
 			)?.data.flatMap { data in
-				try! JSONDecoder().decode([Uniform.Placement].self, from: data)
+				try! api.decoder.decode([Uniform.Placement].self, from: data)
 			} ?? []
 		}
 	}
@@ -83,11 +84,15 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 
 	func eventData(for events: [Uniform.Event]) -> [EventData] {
 		events.compactMap { event in
-			event.data(
-				timeFormatter: event.timeZone.map {
-					timeFormatter(timeZone: timeZone(for: $0))
+			let timeZone = event.timeZone.map(timeZone)
+			return event.data(
+				interval: event.timeZone.map {
+					.init(self.timeZone(for: "ET").secondsFromGMT() - self.timeZone(for: $0).secondsFromGMT())
 				},
-				dateFormatter: dateFormatter
+				dateFormatter: dateFormatter,
+				timeFormatter: timeZone.map(timeFormatter),
+				dateTimeFormatter: timeZone.map(dateTimeFormatter),
+				timestampFormatter: timeZone.map(timestampFormatter)
 			)
 		}
 	}
@@ -102,14 +107,14 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 				events.filter { event in
 					let date: Date
 					let times = event.slots.compactMap(\.time).sorted()
-					let needsPlacements = event.slots.compactMap(\.placement).isEmpty
-					
+					let needsPlacements = event.slots.compactMap(\.performance?.placement).isEmpty
+
 					if times.count < 2 {
 						date = event.date
 					} else if span == .current {
-						date = Date(date: event.date, startTime: times.last!)
+						date = times.last!
 					} else {
-						date = Date(date: event.date, startTime: times[1])
+						date = times[1]
 					}
 					
 					switch span {
@@ -136,7 +141,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 			}
 		) {
 			return await slugs.asyncMap { slugs in
-				let events = try! JSONDecoder().decode([Uniform.Event].self, from: eventData)
+				let events = try! api.decoder.decode([Uniform.Event].self, from: eventData)
 				return await zip(
 					events.sorted {
 						$0.slug < $1.slug
@@ -160,7 +165,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 					)
 					
 					return await site?.data.asyncMap { eventData in
-						let event = try? JSONDecoder().decode(Event.self, from: eventData)
+						let event = try? api.decoder.decode(Event.self, from: eventData)
 						let placements = (span == .upcoming || year == 2021) ? [] : await placements(
 							slug: slug,
 							year: year,
@@ -264,7 +269,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 			return await api.fetch(SlotTimePerformancePlacementFields.self, where: Slot.isPartOfEvent(from: events)).asyncFlatMap { fields in
 				let slotIDs = fields.map(\.id)
 				let performanceIDs = fields.compactMap(\.performance?.id)
-				let placementIDs = fields.compactMap(\.placement?.id)
+				let placementIDs = fields.compactMap(\.performance?.placement?.id)
 
 				return await api.delete(Slot.Identified.self, with: slotIDs).asyncMap { _ in
 					await api.delete(Performance.Identified.self, with: performanceIDs)
@@ -289,13 +294,21 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 // MARK: -
 private extension Uniform.Event {
 	func data(
+		interval: TimeInterval?,
+		dateFormatter: DateFormatter,
 		timeFormatter: DateFormatter?,
-		dateFormatter: DateFormatter
+		dateTimeFormatter: DateFormatter?,
+		timestampFormatter: ISO8601DateFormatter?
 	) -> Service.EventData {
-		(
+		return (
 			.init(
 				slug: slug,
 				date: dateFormatter.date(from: startDate)!,
+				startTime: startTime.flatMap { startTime in
+					dateTimeFormatter?.date(from: "\(startDate) \(startTime)") ?? {
+						timestampFormatter?.date(from: startTime)?.addingTimeInterval(interval!)
+					}()
+				},
 				timeZone: timeZone
 			),
 			.init(
@@ -318,8 +331,9 @@ private extension Uniform.Event {
 				state: venueState
 			),
 			schedules?.compactMap { slot in
-				timeFormatter.map {
-					.init(time: slot.time.flatMap($0.date)?.timeIntervalSinceReferenceDate)
+				dateTimeFormatter.map {
+					let time = slot.time.map { "\(startDate) \($0)" }
+					return .init(time: time.flatMap($0.date))
 				}
 			} ?? [],
 			schedules?.map(\.feature) ?? [],
