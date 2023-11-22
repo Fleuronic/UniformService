@@ -6,7 +6,6 @@ import struct Diesel.Performance
 import struct Diesel.Placement
 import struct Schemata.Projection
 import struct Foundation.Date
-import struct Foundation.TimeInterval
 import protocol DieselService.EventFields
 import protocol Identity.Identifiable
 
@@ -14,7 +13,7 @@ public struct EventDateSlugSlotsFields {
 	public let id: Event.ID
 	public let date: Date
 	public let slug: String?
-	public let slots: [SlotTimePlacementFields]
+	public let slots: [SlotTimePerformancePlacementFields]
 }
 
 extension EventDateSlugSlotsFields: EventFields {
@@ -26,6 +25,7 @@ extension EventDateSlugSlotsFields: EventFields {
 		\.value.slug,
 		\.slots.id,
 		\.slots.value.time,
+		\.slots.performance.id,
 		\.slots.performance.placement.id
 	)
 
@@ -34,6 +34,7 @@ extension EventDateSlugSlotsFields: EventFields {
 		let keys: [PartialKeyPath<Event.Identified>: [ToManyKeys]] = [
 			\.slots.id: [.id],
 			\.slots.value.time: [.time],
+			\.slots.performance.id: [.performance, .id],
 			\.slots.performance.placement.id: [.performance, .placement, .id]
 		]
 
@@ -58,7 +59,8 @@ private extension EventDateSlugSlotsFields {
 		date: Date,
 		slug: String?,
 		slotIDs: [Slot.ID],
-		slotTimes: [TimeInterval?],
+		slotTimes: [Date?],
+		performanceIDs: [Performance.ID?],
 		placementIDs: [Placement.ID?]
 	) {
 		self.id = id
@@ -69,7 +71,12 @@ private extension EventDateSlugSlotsFields {
 			.init(
 				id: id,
 				time: slotTimes[index],
-				placement: placementIDs[index].map { .init(id: $0) }
+				performance: performanceIDs[index].map {
+					.init(
+						id: $0,
+						placement: placementIDs[index].map { .init(id: $0) }
+					)
+				}
 			)
 		}
 	}

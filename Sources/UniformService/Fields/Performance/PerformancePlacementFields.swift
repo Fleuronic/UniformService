@@ -9,37 +9,32 @@ import struct Diesel.Placement
 import struct Diesel.Division
 import struct Catena.IDFields
 import struct Schemata.Projection
-import struct Foundation.TimeInterval
-import enum Catenary.IDCodingKeys
-import protocol DieselService.SlotFields
+import struct Foundation.Date
 import protocol Identity.Identifiable
+import protocol DieselService.PerformanceFields
 
-public struct SlotTimePlacementFields {
-	public let id: Slot.ID
-	public let time: TimeInterval?
+public struct PerformancePlacementFields {
+	public let id: Performance.ID
 	public let placement: IDFields<Placement.Identified>?
 }
 
 // MARK: -
-extension SlotTimePlacementFields: SlotFields {
+extension PerformancePlacementFields: PerformanceFields {
 	// MARK: ModelProjection
-	public static let projection = Projection<Slot.Identified, Self>(
+	public static let projection = Projection<Performance.Identified, Self>(
 		Self.init,
 		\.id,
-		\.value.time,
-		\.performance.placement.id
+		\.placement.id
 	)
 }
 
 // MARK: -
-private extension SlotTimePlacementFields {
+private extension PerformancePlacementFields {
 	init(
-		id: Slot.ID,
-		time: TimeInterval?,
+		id: Performance.ID,
 		placementID: Placement.ID?
 	) {
 		self.id = id
-		self.time = time
 
 		placement = placementID.map { .init(id: $0) }
 	}
