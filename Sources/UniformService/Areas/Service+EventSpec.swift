@@ -46,9 +46,31 @@ extension Service: EventSpec where Self: ShowSpec & AddressSpec & VenueSpec & Sl
 
 // MARK: -
 private extension Service {
-	typealias EventData = (Diesel.Event, Diesel.Show?, Diesel.Venue?, Address?, Location, [Slot], [Feature?], [Corps?], [Location?])
-	typealias EventResult = (Diesel.Event.Identified, [Slot.Identified], [Performance.Identified], [Diesel.Placement.Identified])
-	typealias EventPlacementData = [(Uniform.Event, [Uniform.Placement])]
+	typealias EventData = (
+		event: Diesel.Event,
+		show: Diesel.Show?,
+		venue: Diesel.Venue?,
+		address: Address?,
+		location: Location, 
+		slots: [Slot], 
+		features: [Feature?],
+		corps: [Corps?],
+		locations: [Location?]
+	)
+
+	typealias EventResult = (
+		event: Diesel.Event.Identified, 
+		slots: [Slot.Identified], 
+		performances: [Performance.Identified], 
+		placements: [Diesel.Placement.Identified]
+	)
+
+	typealias EventPlacementData = [
+		(
+			event: Uniform.Event,
+			placements: [Uniform.Placement]
+		)
+	]
 
 	func placements(
 		slug: String,
@@ -108,7 +130,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 					let date: Date
 					let times = event.slots.compactMap(\.time).sorted()
 					let needsPlacements = event.slots.compactMap(\.performance?.placement).isEmpty
-
+					
 					if times.count < 2 {
 						date = event.date
 					} else if span == .current {
@@ -152,7 +174,12 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 							year: year
 						)
 					}
-				)
+				).map {
+					(
+						event: $0.0,
+						placements: $0.1
+					)
+				}
 			}.map(Array.init)
 		} else {
 			return await slugs.asyncMap { slugs in
@@ -185,7 +212,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 	) async -> APIResult<EventResult> {
 		let result: APIResult<Diesel.Event.Identified>
 		let (event, show, venue, address, location, slots, slotFeatures, slotCorps, slotLocations) = data
-
+    	
 		if let address, let show, let venue {
 			result = await find(location).asyncFlatMap { location in
 				await find(address, in: location).asyncFlatMap { address in
@@ -234,9 +261,9 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 			).map { data in
 				(
 					event: event,
-					slots: data.map(\.0),
-					performances: data.compactMap(\.1),
-					placements: data.compactMap(\.2)
+					slots: data.map(\.slot),
+					performances: data.compactMap(\.performance),
+					placements: data.compactMap(\.placement)
 				)
 			}
 		}
@@ -255,14 +282,18 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 				placements: placements
 			)
 		}.asyncFlatMap { data in
-			let data = current ? (data.enumerated().filter {
-				Set(data.enumerated().filter { !$0.1.3.isEmpty }.map(\.0)).contains($0.0)
-			}).map(\.1) : data
+			let data = current ? (data.enumerated().filter { index, _ in
+				Set(
+					data.enumerated().filter { _, result in
+						!result.performances.isEmpty 
+					}.map(\.offset)
+				).contains(index)
+			}).map(\.element) : data
 			
-			let events = data.map(\.0)
-			let slots = data.flatMap(\.1)
-			let performances = data.flatMap(\.2)
-			let placements = data.flatMap(\.3)
+			let events = data.map(\.event)
+			let slots = data.flatMap(\.slots)
+			let performances = data.flatMap(\.performances)
+			let placements = data.flatMap(\.placements)
 			
 			guard !events.isEmpty, !(current && placements.isEmpty) else { return .success([]) }
 			

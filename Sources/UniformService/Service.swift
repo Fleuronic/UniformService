@@ -24,9 +24,23 @@ import protocol DieselService.EventFields
 public extension Service {
 	typealias APIResult<Resource> = API.Result<Resource>
 	typealias DatabaseResult<Resource> = Database.Result<Resource>
-	typealias CorpsData = (Corps.Identified, String)?
-	typealias SlotPerformancePlacementData = (Slot.Identified, Performance.Identified?, Placement.Identified?)
-	typealias CorpsPerformancePlacementData = (Corps.Identified?, Performance.Identified?, Placement.Identified?)
+	
+	typealias CorpsData = (
+		corps: Corps.Identified, 
+		corpsName: String
+	)?
+	
+	typealias SlotPerformancePlacementData = (
+		slot: Slot.Identified, 
+		performance: Performance.Identified?, 
+		placement: Placement.Identified?
+	)
+	
+	typealias CorpsPerformancePlacementData = (
+		corps: Corps.Identified?,
+		performance: Performance.Identified?, 
+		placement: Placement.Identified?
+	)
 
 	var dateFormatter: DateFormatter {
 		let formatter = DateFormatter()
