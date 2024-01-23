@@ -10,7 +10,6 @@ import struct DieselService.IdentifiedCorps
 import struct Foundation.TimeZone
 import class Foundation.DateFormatter
 import class Foundation.ISO8601DateFormatter
-import class CoreLocation.CLGeocoder
 import protocol Catenary.API
 import protocol Catenoid.Database
 import protocol DieselService.EventFields

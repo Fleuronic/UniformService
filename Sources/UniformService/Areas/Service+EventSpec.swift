@@ -29,7 +29,6 @@ import class Foundation.ISO8601DateFormatter
 import class Foundation.Bundle
 import class Foundation.JSONSerialization
 import class CoreLocation.CLLocation
-import class CoreLocation.CLPlacemark
 import protocol Caesura.HasuraAPI
 
 extension Service: EventSpec where Self: ShowSpec & AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
