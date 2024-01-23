@@ -19,12 +19,17 @@ import struct Uniform.Site
 import struct Foundation.URL
 import struct Foundation.Date
 import struct Foundation.TimeInterval
+import struct Foundation.TimeZone
 import struct Foundation.Data
+import struct CoreLocation.CLLocationDegrees
 import class Foundation.JSONDecoder
 import class Foundation.URLSession
 import class Foundation.DateFormatter
 import class Foundation.ISO8601DateFormatter
 import class Foundation.Bundle
+import class Foundation.JSONSerialization
+import class CoreLocation.CLLocation
+import class CoreLocation.CLPlacemark
 import protocol Caesura.HasuraAPI
 
 extension Service: EventSpec where Self: ShowSpec & AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
@@ -104,17 +109,37 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 		)
 	}
 
-	func eventData(for events: [Uniform.Event]) -> [EventData] {
-		events.compactMap { event in
-			let timeZone = event.timeZone.map(timeZone)
+	func eventData(for events: [Uniform.Event]) async -> [EventData] {
+		await events.asyncMap { event in
+			let timeZone = await event.timeZone.map(self.timeZone).asyncMapNil {
+				let address = "\(event.venueCity), \(event.venueState)"
+				let apiKey = "AIzaSyAQuB9CVQf_m9huLNCnzjqscI12DoazZI8"
+				let url = URL(string: "https://maps.googleapis.com/maps/api/geocode/json?address=\(address)&key=\(apiKey)")!
+				let (data, _) = try! await URLSession.shared.data(from: url)
+				let json = try! JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String: Any]
+				if let result = json["results"] as? [[String: Any]] {
+					if let geometry = result[0]["geometry"] as? [String: Any] {
+						if let location = geometry["location"] as? [String: Any] {
+							let latitude = location["lat"] as! CLLocationDegrees
+							let longitude = location["lng"] as! CLLocationDegrees
+							let timestamp = Date().timeIntervalSince1970
+							let url = URL(string: "https://maps.googleapis.com/maps/api/timezone/json?location=\(latitude),\(longitude)&timestamp=\(timestamp)&key=\(apiKey)")!
+							let (data, _) = try! await URLSession.shared.data(from: url)
+							let json = try! JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String: Any]
+							let timeZoneID = json["timeZoneId"] as! String
+							return TimeZone.init(identifier: timeZoneID)!
+						}
+					}
+				}
+				return TimeZone.current
+			}
+			
 			return event.data(
-				interval: event.timeZone.map {
-					.init(self.timeZone(for: "ET").secondsFromGMT() - self.timeZone(for: $0).secondsFromGMT())
-				},
+				timeZone: timeZone,
+				interval: .init(self.timeZone(for: "ET").secondsFromGMT() - timeZone.secondsFromGMT()),
 				dateFormatter: dateFormatter,
-				timeFormatter: timeZone.map(timeFormatter),
-				dateTimeFormatter: timeZone.map(dateTimeFormatter),
-				timestampFormatter: timeZone.map(timestampFormatter)
+				dateTimeFormatter: dateTimeFormatter(with: timeZone),
+				timestampFormatter: timestampFormatter(with: timeZone)
 			)
 		}
 	}
@@ -165,9 +190,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 			return await slugs.asyncMap { slugs in
 				let events = try! api.decoder.decode([Uniform.Event].self, from: eventData)
 				return await zip(
-					events.sorted {
-						$0.slug < $1.slug
-					},
+					events.sorted { $0.slug < $1.slug },
 					slugs.asyncMap { slug in
 						await placements(
 							slug: slug,
@@ -325,26 +348,23 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 // MARK: -
 private extension Uniform.Event {
 	func data(
-		interval: TimeInterval?,
+		timeZone: TimeZone,
+		interval: TimeInterval,
 		dateFormatter: DateFormatter,
-		timeFormatter: DateFormatter?,
-		dateTimeFormatter: DateFormatter?,
-		timestampFormatter: ISO8601DateFormatter?
+		dateTimeFormatter: DateFormatter,
+		timestampFormatter: ISO8601DateFormatter
 	) -> Service.EventData {
-		return (
+		(
 			.init(
 				slug: slug,
 				date: dateFormatter.date(from: startDate)!,
 				startTime: startTime.flatMap { startTime in
-					dateTimeFormatter?.date(from: "\(startDate) \(startTime)") ?? {
-						timestampFormatter?.date(from: startTime)?.addingTimeInterval(interval!)
-					}()
+					dateTimeFormatter.date(from: "\(startDate) \(startTime)") ??
+						timestampFormatter.date(from: startTime)?.addingTimeInterval(interval)
 				},
-				timeZone: timeZone
+				timeZone: timeZone.abbreviation()!.replacing("S", with: "")
 			),
-			.init(
-				name: name
-			),
+			.init(name: name),
 			venueName.map { name in
 				.init(
 					name: name,
@@ -362,10 +382,8 @@ private extension Uniform.Event {
 				state: venueState
 			),
 			schedules?.compactMap { slot in
-				dateTimeFormatter.map {
-					let time = slot.time.map { "\(startDate) \($0)" }
-					return .init(time: time.flatMap($0.date))
-				}
+				let time = slot.time.map { "\(startDate) \($0)" }
+				return .init(time: time.flatMap(dateTimeFormatter.date))
 			} ?? [],
 			schedules?.map(\.feature) ?? [],
 			schedules?.map(\.corps) ?? [],
