@@ -1,6 +1,5 @@
 // Copyright © Fleuronic LLC. All rights reserved.
 
-import InitMacro
 import PersistDB
 
 import struct Diesel.Corps
@@ -11,13 +10,15 @@ import struct DieselService.IdentifiedCorps
 import struct Foundation.TimeZone
 import class Foundation.DateFormatter
 import class Foundation.ISO8601DateFormatter
+import class CoreLocation.CLGeocoder
 import protocol Catenary.API
 import protocol Catenoid.Database
 import protocol DieselService.EventFields
 
-@Init public struct Service<API: Catenary.API, Database: Catenoid.Database> where Database.Store == Store<ReadWrite> {
+public struct Service<API: Catenary.API, Database: Catenoid.Database> where Database.Store == Store<ReadWrite> {
 	let api: API
 	let database: Database
+	let dateFormatter: DateFormatter
 }
 
 // MARK: -
@@ -41,11 +42,16 @@ public extension Service {
 		performance: Performance.Identified?, 
 		placement: Placement.Identified?
 	)
-
-	var dateFormatter: DateFormatter {
-		let formatter = DateFormatter()
-		formatter.dateFormat = .dateFormat
-		return formatter
+	
+	init(
+		api: API,
+		database: Database
+	) {
+		self.api = api
+		self.database = database
+		
+		dateFormatter = DateFormatter()
+		dateFormatter.dateFormat = .dateFormat
 	}
 
 	func timeFormatter(with timeZone: TimeZone) -> DateFormatter {
