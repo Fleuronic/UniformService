@@ -37,7 +37,7 @@ extension EventDateSlugSlotsFields: EventFields {
 			\.slots.performance.id: [.performance, .id],
 			\.slots.performance.placement.id: [.performance, .placement, .id]
 		]
-
+		
 		return keys.mapValues {
 			([.slots] + $0).map(\.rawValue)
 		}
@@ -66,7 +66,7 @@ private extension EventDateSlugSlotsFields {
 		self.id = id
 		self.date = date
 		self.slug = slug
-
+		
 		slots = slotIDs.enumerated().map { index, id in
 			.init(
 				id: id,

@@ -1,8 +1,6 @@
 // Copyright © Fleuronic LLC. All rights reserved.
 
 import struct Diesel.Slot
-import struct Diesel.Feature
-import struct Diesel.Corps
 import struct Diesel.Performance
 import struct Diesel.Location
 import struct Diesel.Placement

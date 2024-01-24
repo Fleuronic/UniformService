@@ -35,7 +35,7 @@ private extension PerformancePlacementFields {
 		placementID: Placement.ID?
 	) {
 		self.id = id
-
+		
 		placement = placementID.map { .init(id: $0) }
 	}
 }
