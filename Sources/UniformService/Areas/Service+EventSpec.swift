@@ -163,19 +163,16 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 						date = times[1]
 					}
 					
-					switch span {
-					case .season:
-						return true
-					case .current:
-						return date < .init() && -date.timeIntervalSinceNow < 60 * 60 && needsPlacements
-					case .upcoming:
-						return date > .init()
+					return switch span {
+					case .season: true
+					case .current: date < .init() && -date.timeIntervalSinceNow < 60 * 60 && needsPlacements
+					case .upcoming: date > .init()
 					}
 				}.compactMap(\.slug)
 			}
 		}
 		
-		if let eventData = (
+		return if let eventData = (
 			Bundle.module.url(
 				forResource: "\(year)",
 				withExtension: "json"
@@ -186,7 +183,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 				)
 			}
 		) {
-			return await slugs.asyncMap { slugs in
+			await slugs.asyncMap { slugs in
 				let events = try! api.decoder.decode([Uniform.Event].self, from: eventData)
 				return await zip(
 					events.sorted { $0.slug < $1.slug },
@@ -204,7 +201,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 				}
 			}.map(Array.init)
 		} else {
-			return await slugs.asyncMap { slugs in
+			await slugs.asyncMap { slugs in
 				await slugs.asyncCompactMap { slug in
 					let site = await Site(
 						domain: .dci,

@@ -39,9 +39,7 @@ extension Service: SlotSpec where
 			slot.identified(event: event)
 		)
 		
-		return result.map { slot in
-			return (slot, performance, placement)
-		}
+		return result.map { slot in (slot, performance, placement) }
 	}
 
 	public func slotsResult(
