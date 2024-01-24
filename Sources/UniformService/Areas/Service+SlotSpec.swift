@@ -53,7 +53,6 @@ extension Service: SlotSpec where
 		await zip(slots, zip(slotLocations, zip(slotFeatures, slotCorps))).asyncFlatMap { slot, locationFeatureCorps in
 			let (location, featureCorps) = locationFeatureCorps
 			let (feature, corps) = featureCorps
-			
 			let corpsResult = await corps.asyncFlatMap { corps in
 				let corpsName = corps.name
 				return await location.asyncMap { location in

@@ -1,7 +1,6 @@
 // Copyright © Fleuronic LLC. All rights reserved.
 
 import struct Diesel.Corps
-import struct Diesel.Corps
 import struct Diesel.Location
 import struct DieselService.IdentifiedCorps
 

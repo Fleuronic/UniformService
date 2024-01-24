@@ -23,6 +23,7 @@ extension Service: PerformanceSpec where
 						rank: placement.rank,
 						score: placement.totalScore
 					).identified(division: division)
+					
 					return (
 						corps,
 						performance.identified(
