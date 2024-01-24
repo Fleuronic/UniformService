@@ -11,9 +11,7 @@ extension Service: ShowSpec where
 	public func find(_ show: Show) async -> APIResult<Show.Identified> {
 		await database.find(show).value.map(APIResult.success).asyncMapNil {
 			await api.find(show).asyncFlatMap { show in
-				await database.insert(show).map { _ in
-					.success(show)
-				}.value
+				await database.insert(show).map { _ in .success(show) }.value
 			}
 		}
 	}

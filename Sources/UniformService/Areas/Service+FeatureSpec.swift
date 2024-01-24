@@ -12,9 +12,7 @@ extension Service: FeatureSpec where
 	public func find(_ feature: Feature, by corps: Corps.Identified?) async -> APIResult<Feature.Identified> {
 		await database.find(feature, by: corps).value.map(APIResult.success).asyncMapNil {
 			await api.find(feature, by: corps).asyncFlatMap { feature in
-				await database.insert(feature).map { _ in
-					.success(feature)
-				}.value
+				await database.insert(feature).map { _ in .success(feature) }.value
 			}
 		}
 	}

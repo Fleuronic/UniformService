@@ -57,10 +57,8 @@ extension Service: SlotSpec where
 				let corpsName = corps.name
 				return await location.asyncMap { location in
 					await find(location).asyncFlatMap { location in
-						await find(corps, from: location).map { corps in
-							(corps, corpsName)
-						}
-					}
+						await find(corps, from: location)
+					}.map { corps in (corps, corpsName) }
 				}.asyncMapNil {
 					await find(corps, from: nil).map { corps -> CorpsData in
 						(corps, corpsName)

@@ -14,12 +14,10 @@ extension Service: CorpsSpec where
 		await database.find(corps, from: location).value.map(APIResult.success).asyncMapNil {
 			await api.find(corps, from: location).asyncMap { corps in
 				await database.insert(corps).asyncFlatMap { _ in
-					await database.find(corps.location.value).asyncMap { location in
-						await location.map { _ in corps }.asyncMapNil {
-							await database.insert(corps.location).map {
-								_ in corps
-							}.value
-						}
+					await database.find(corps.location.value)
+				}.asyncMap { location in
+					await location.map { _ in corps }.asyncMapNil {
+						await database.insert(corps.location).map { _ in corps }.value
 					}
 				}.value
 			}

@@ -11,9 +11,7 @@ extension Service: LocationSpec where
 	public func find(_ location: Location) async -> APIResult<Location.Identified> {
 		await database.find(location).value.map(APIResult.success).asyncMapNil {
 			await api.find(location).asyncFlatMap { location in
-				await database.insert(location).map { _ in
-					.success(location)
-				}.value
+				await database.insert(location).map { _ in .success(location) }.value
 			}
 		}
 	}
