@@ -4,21 +4,20 @@ import struct Diesel.Event
 import struct Diesel.Slot
 import struct Diesel.Performance
 import struct Diesel.Placement
-import struct Schemata.Projection
 import struct Foundation.Date
+import struct Schemata.Projection
 import protocol DieselService.EventFields
-import protocol Identity.Identifiable
 
-public struct EventDateSlugSlotsFields {
-	public let id: Event.ID
-	public let date: Date
-	public let slug: String?
-	public let slots: [SlotTimePerformancePlacementFields]
+struct EventDateSlugSlotsFields {
+	let id: Event.ID
+	let date: Date
+	let slug: String?
+	let slots: [SlotTimePerformancePlacementFields]
 }
 
 extension EventDateSlugSlotsFields: EventFields {
 	// MARK: ModelProjection
-	public static let projection = Projection<Event.Identified, Self>(
+	static let projection = Projection<Event.Identified, Self>(
 		Self.init,
 		\.id,
 		\.value.date,
@@ -30,7 +29,7 @@ extension EventDateSlugSlotsFields: EventFields {
 	)
 
 	// MARK: Fields
-	public static var toManyKeys: [PartialKeyPath<Event.Identified>: [String]] {
+	static var toManyKeys: [PartialKeyPath<Event.Identified>: [String]] {
 		let keys: [PartialKeyPath<Event.Identified>: [ToManyKeys]] = [
 			\.slots.id: [.id],
 			\.slots.value.time: [.time],

@@ -8,19 +8,18 @@ import struct Diesel.Division
 import struct Catena.IDFields
 import struct Schemata.Projection
 import struct Foundation.Date
-import protocol Identity.Identifiable
 import protocol DieselService.SlotFields
 
-public struct SlotTimePerformancePlacementFields {
-	public let id: Slot.ID
-	public let time: Date?
-	public let performance: PerformancePlacementFields?
+struct SlotTimePerformancePlacementFields {
+	let id: Slot.ID
+	let time: Date?
+	let performance: PerformancePlacementFields?
 }
 
 // MARK: -
 extension SlotTimePerformancePlacementFields: SlotFields {
 	// MARK: ModelProjection
-	public static let projection = Projection<Slot.Identified, Self>(
+	static let projection = Projection<Slot.Identified, Self>(
 		Self.init,
 		\.id,
 		\.value.time,

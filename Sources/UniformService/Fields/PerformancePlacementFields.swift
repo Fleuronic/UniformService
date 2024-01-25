@@ -7,21 +7,20 @@ import struct Diesel.Performance
 import struct Diesel.Location
 import struct Diesel.Placement
 import struct Diesel.Division
+import struct Foundation.Date
 import struct Catena.IDFields
 import struct Schemata.Projection
-import struct Foundation.Date
-import protocol Identity.Identifiable
 import protocol DieselService.PerformanceFields
 
-public struct PerformancePlacementFields {
-	public let id: Performance.ID
-	public let placement: IDFields<Placement.Identified>?
+struct PerformancePlacementFields {
+	let id: Performance.ID
+	let placement: IDFields<Placement.Identified>?
 }
 
 // MARK: -
 extension PerformancePlacementFields: PerformanceFields {
 	// MARK: ModelProjection
-	public static let projection = Projection<Performance.Identified, Self>(
+	static let projection = Projection<Performance.Identified, Self>(
 		Self.init,
 		\.id,
 		\.placement.id
