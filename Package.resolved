@@ -6,7 +6,7 @@
       "location" : "https://github.com/Fleuronic/Caesura",
       "state" : {
         "branch" : "main",
-        "revision" : "d96eed1013a0ee3035476d8c9b66a5080c30f9c2"
+        "revision" : "c40587f262e1bece0a45697dbca4e15728b02cb0"
       }
     },
     {
@@ -15,7 +15,7 @@
       "location" : "https://github.com/Fleuronic/Catena",
       "state" : {
         "branch" : "main",
-        "revision" : "4ca5c0ad5552f60dde02ae6fbebad2d8662d259b"
+        "revision" : "b7ed813f0a259dece94e97a9ebd8ba8cf0e23790"
       }
     },
     {
@@ -33,7 +33,7 @@
       "location" : "https://github.com/Fleuronic/Catenoid",
       "state" : {
         "branch" : "main",
-        "revision" : "acf392cae2cb0cdb517d4912dbed7a7549f2e7d8"
+        "revision" : "911c088ff3f4023fe35081c1712fbb05ac73c7b5"
       }
     },
     {
@@ -51,7 +51,7 @@
       "location" : "https://github.com/Fleuronic/Diesel.git",
       "state" : {
         "branch" : "main",
-        "revision" : "1b11aae43713b79d870b95960e067a42c6951f27"
+        "revision" : "01ed31b9cd3b3ef7c064c7930de4c6a5fd0cee52"
       }
     },
     {
@@ -60,7 +60,7 @@
       "location" : "https://github.com/Fleuronic/DieselService",
       "state" : {
         "branch" : "main",
-        "revision" : "9b5deaebe8cc92f4d97ee1813b3db58f7a2f7fa7"
+        "revision" : "cd224ddac1aa5d5a371da516acbe652d4ddf8ac8"
       }
     },
     {
@@ -141,7 +141,7 @@
       "location" : "https://github.com/Fleuronic/Uniform",
       "state" : {
         "branch" : "main",
-        "revision" : "fd252de1e02937d5a932f0307043b79907fb1d0a"
+        "revision" : "da8db8ccfa551e46a5b1ccd8766f280d72336ce2"
       }
     },
     {
