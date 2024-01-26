@@ -150,16 +150,15 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 		let slugs = await slugs.map(APIResult.success).asyncMapNil {
 			await api.fetch(EventDateSlugSlotsFields.self).map { events in
 				events.filter { event in
-					let date: Date
 					let times = event.slots.compactMap(\.time).sorted()
 					let needsPlacements = event.slots.compactMap(\.performance?.placement).isEmpty
 					
-					if times.count < 2 {
-						date = event.date
+					let date = if times.count < 2 {
+						event.date
 					} else if span == .current {
-						date = times.last!
+						times.last!
 					} else {
-						date = times[1]
+						times[1]
 					}
 					
 					return switch span {
