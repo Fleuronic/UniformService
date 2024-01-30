@@ -7,6 +7,7 @@ import struct Diesel.Slot
 import struct Diesel.Performance
 import struct Diesel.Placement
 import struct DieselService.IdentifiedCorps
+import struct GeodeAPI.API
 import struct Foundation.TimeZone
 import class Foundation.DateFormatter
 import class Foundation.ISO8601DateFormatter
@@ -16,6 +17,7 @@ import protocol DieselService.EventFields
 
 public struct Service<API: Catenary.API, Database: Catenoid.Database> where Database.Store == Store<ReadWrite> {
 	let api: API
+	let geodeAPI: GeodeAPI.API
 	let database: Database
 	let dateFormatter: DateFormatter
 }
@@ -44,9 +46,11 @@ public extension Service {
 	
 	init(
 		api: API,
+		geodeAPI: GeodeAPI.API,
 		database: Database
 	) {
 		self.api = api
+		self.geodeAPI = geodeAPI
 		self.database = database
 		
 		dateFormatter = DateFormatter()

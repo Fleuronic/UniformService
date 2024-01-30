@@ -21,13 +21,11 @@ import struct Foundation.Date
 import struct Foundation.TimeInterval
 import struct Foundation.TimeZone
 import struct Foundation.Data
-import struct CoreLocation.CLLocationDegrees
 import class Foundation.JSONDecoder
 import class Foundation.URLSession
 import class Foundation.DateFormatter
 import class Foundation.ISO8601DateFormatter
 import class Foundation.Bundle
-import class Foundation.JSONSerialization
 import protocol Caesura.HasuraAPI
 
 extension Service: EventSpec where Self: ShowSpec & AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
@@ -111,27 +109,16 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 		await events.asyncMap { event in
 			let timeZone = await event.timeZone.map(self.timeZone).asyncMapNil {
 				let address = "\(event.venueCity), \(event.venueState)"
-				let apiKey = "AIzaSyAQuB9CVQf_m9huLNCnzjqscI12DoazZI8"
-				let url = URL(string: "https://maps.googleapis.com/maps/api/geocode/json?address=\(address)&key=\(apiKey)")!
-				let (data, _) = try! await URLSession.shared.data(from: url)
-				let json = try! JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String: Any]
-				if let result = json["results"] as? [[String: Any]] {
-					if let geometry = result[0]["geometry"] as? [String: Any] {
-						if let location = geometry["location"] as? [String: Any] {
-							let latitude = location["lat"] as! CLLocationDegrees
-							let longitude = location["lng"] as! CLLocationDegrees
-							let timestamp = Date().timeIntervalSince1970
-							let url = URL(string: "https://maps.googleapis.com/maps/api/timezone/json?location=\(latitude),\(longitude)&timestamp=\(timestamp)&key=\(apiKey)")!
-							let (data, _) = try! await URLSession.shared.data(from: url)
-							let json = try! JSONSerialization.jsonObject(with: data, options: .allowFragments) as! [String: Any]
-							let timeZoneID = json["timeZoneId"] as! String
-							return TimeZone.init(identifier: timeZoneID)!
-						}
+				let timestamp = Date().timeIntervalSince1970
+				
+				return try! await geodeAPI.listGeocodes(for: address).asyncFlatMap { geocodes in
+					let location = geocodes.first!.geometry.location
+					return await geodeAPI.fetchTimeZone(in: location, at: timestamp).asyncMap { timeZone in
+						TimeZone(identifier: timeZone.timeZoneID)!
 					}
-				}
-				return TimeZone.current
+				}.get()
 			}
-			
+
 			return event.data(
 				timeZone: timeZone,
 				interval: .init(self.timeZone(for: "ET").secondsFromGMT() - timeZone.secondsFromGMT()),

@@ -18,6 +18,7 @@ let package = Package(
 	dependencies: [
 		.package(url: "https://github.com/Fleuronic/Uniform", branch: "main"),
 		.package(url: "https://github.com/Fleuronic/DieselService", branch: "main"),
+		.package(url: "https://github.com/Fleuronic/GeodeAPI", branch: "main"),
 		.package(url: "https://github.com/Fleuronic/Caesura", branch: "main"),
 		.package(url: "https://github.com/JohnSundell/Identity", from: "0.1.0")
 	],
@@ -27,6 +28,7 @@ let package = Package(
 			dependencies: [
 				"Uniform",
 				"DieselService",
+				"GeodeAPI",
 				"Caesura",
 				"Identity"
 			],
