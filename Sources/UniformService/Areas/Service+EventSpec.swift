@@ -207,7 +207,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 			events.filter { event in
 				let times = event.slots.compactMap(\.time).sorted()
 				let needsPlacements = event.slots.compactMap(\.performance?.placement).isEmpty
-			
+				
 				let date = if times.count < 2 {
 					event.date
 				} else if span == .current {
@@ -215,7 +215,7 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 				} else {
 					times[1]
 				}
-			
+				
 				return switch span {
 				case .season: true
 				case .current: date < .init() && -date.timeIntervalSinceNow < 60 * 60 && needsPlacements
