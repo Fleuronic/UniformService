@@ -68,13 +68,6 @@ private extension Service {
 		performances: [Performance.Identified], 
 		placements: [Diesel.Placement.Identified]
 	)
-
-	typealias EventPlacementData = [
-		(
-			event: Uniform.Event,
-			placements: [Uniform.Placement]
-		)
-	]
 	
 	func eventData(for events: [Uniform.Event]) async -> [EventData] {
 		await events.asyncMap { event in

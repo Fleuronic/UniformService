@@ -27,6 +27,13 @@ public extension Service {
 	typealias APIResult<Resource> = API.Result<Resource>
 	typealias DatabaseResult<Resource> = Database.Result<Resource>
 	
+	typealias EventPlacementData = [
+		(
+			event: Event,
+			placements: [Placement]
+		)
+	]
+	
 	typealias CorpsData = (
 		corps: Corps.Identified, 
 		corpsName: String

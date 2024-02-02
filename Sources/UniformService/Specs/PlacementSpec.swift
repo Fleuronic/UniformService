@@ -8,12 +8,6 @@ public protocol PlacementSpec {
 	associatedtype SlugsResult
 	associatedtype EventPlacementDataResult
 	
-	func placements(
-		slug: String,
-		year: Int,
-		data: Data?
-	) async -> [Placement]
-	
 	func eventPlacementData(
 		year: Int,
 		eventData: Data,
