@@ -21,14 +21,17 @@ import struct Foundation.Date
 import struct Foundation.TimeInterval
 import struct Foundation.TimeZone
 import struct Foundation.Data
-import class Foundation.JSONDecoder
 import class Foundation.URLSession
 import class Foundation.DateFormatter
 import class Foundation.ISO8601DateFormatter
 import class Foundation.Bundle
 import protocol Caesura.HasuraAPI
 
-extension Service: EventSpec where Self: ShowSpec & AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
+extension Service: EventSpec where 
+	Self: ShowSpec & AddressSpec & VenueSpec & SlotSpec, 
+	API: PlacementSpec & HasuraAPI,
+	API.SlugsResult == APIResult<[String]>,
+	API.EventPlacementDataResult == APIResult<EventPlacementData> {
 	public func createEvents(for year: Int) async -> APIResult<[Diesel.Event.ID]> {
 		await events(for: year).asyncFlatMap { data in
 			await updateEvents(current: false, data: data)
@@ -72,25 +75,6 @@ private extension Service {
 			placements: [Uniform.Placement]
 		)
 	]
-
-	func placements(
-		slug: String,
-		year: Int,
-		data: Data? = nil
-	) async -> [Uniform.Placement] {
-		if let data {
-			try! api.decoder.decode([Uniform.Placement].self, from: data)
-		} else {
-			await Site(
-				domain: .dci,
-				path: .scores,
-				slug: slug.normalized(from: .events),
-				year: year
-			)?.data.flatMap { data in
-				try! api.decoder.decode([Uniform.Placement].self, from: data)
-			} ?? []
-		}
-	}
 	
 	func eventData(for events: [Uniform.Event]) async -> [EventData] {
 		await events.asyncMap { event in
@@ -119,56 +103,14 @@ private extension Service {
 		}
 	}
 
-	func eventPlacementData(
-		year: Int,
-		eventData: Data,
-		slugsResult: APIResult<[String]>
-	) async -> APIResult<EventPlacementData> {
-		await slugsResult.asyncMap { slugs in
-			let events = try! api.decoder.decode([Uniform.Event].self, from: eventData)
-			return await zip(
-				events.sorted { $0.slug < $1.slug },
-				slugs.asyncMap { slug in
-					await placements(
-						slug: slug,
-						year: year
-					)
-				}
-			).map { (event: $0.0, placements: $0.1) }
-		}.map(Array.init)
-	}
-	
-	func eventPlacementData(
-		year: Int,
-		span: Span,
-		slugsResult: APIResult<[String]>
-	) async -> APIResult<EventPlacementData> {
-		await slugsResult.asyncMap { slugs in
-			await slugs.asyncCompactMap { slug in
-				let site = await Site(
-					domain: .dci,
-					path: .events,
-					slug: slug,
-					year: year
-				)
-				
-				return await site?.data.asyncMap { eventData in
-					let event = try? api.decoder.decode(Event.self, from: eventData)
-					let placements = (span == .upcoming || year == 2021) ? [] : await placements(
-						slug: slug,
-						year: year,
-						data: year <= 2017 ? site?.data(at: .scores) : nil
-					)
-					
-					return await event.asyncMap { ($0, placements) }
-				}
-			}.compactMap { $0 }
-		}
-	}
 }
 
 // MARK: -
-private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotSpec, API: HasuraAPI {
+private extension Service where 
+	Self: ShowSpec & AddressSpec & VenueSpec & SlotSpec, 
+	API: PlacementSpec & HasuraAPI,
+	API.SlugsResult == APIResult<[String]>,
+	API.EventPlacementDataResult == APIResult<EventPlacementData> {
 	func events(for year: Int) async -> APIResult<EventPlacementData> {
 		await eventPlacements(
 			year: year,
@@ -188,13 +130,13 @@ private extension Service where Self: ShowSpec & AddressSpec & VenueSpec & SlotS
 		let slugsResult = await slugs.map(APIResult.success).asyncMapNil { await self.slugs(from: span) }
 		
 		return if let url {
-			await eventPlacementData(
+			await api.eventPlacementData(
 				year: year,
 				eventData: try! Foundation.Data(contentsOf: url, options: []),
 				slugsResult: slugsResult
 			)
 		} else {
-			await eventPlacementData(
+			await api.eventPlacementData(
 				year: year,
 				span: span,
 				slugsResult: slugsResult
