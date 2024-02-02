@@ -7,6 +7,8 @@ import struct Diesel.Slot
 import struct Diesel.Performance
 import struct Diesel.Placement
 import struct DieselService.IdentifiedCorps
+import struct Uniform.Event
+import struct Uniform.Placement
 import struct GeodeAPI.API
 import struct Foundation.TimeZone
 import class Foundation.DateFormatter
@@ -29,8 +31,8 @@ public extension Service {
 	
 	typealias EventPlacementData = [
 		(
-			event: Event,
-			placements: [Placement]
+			event: Uniform.Event,
+			placements: [Uniform.Placement]
 		)
 	]
 	
@@ -42,13 +44,13 @@ public extension Service {
 	typealias SlotPerformancePlacementData = (
 		slot: Slot.Identified, 
 		performance: Performance.Identified?, 
-		placement: Placement.Identified?
+		placement: Diesel.Placement.Identified?
 	)
 	
 	typealias CorpsPerformancePlacementData = (
 		corps: Corps.Identified?,
 		performance: Performance.Identified?, 
-		placement: Placement.Identified?
+		placement: Diesel.Placement.Identified?
 	)
 	
 	init(
