@@ -5,12 +5,18 @@ import struct Catena.IDFields
 import protocol Catena.Fields
 
 public protocol CorpsFields: Fields where Model == Corps.Identified {
-	init(corps: Corps.Identified)
+	init(
+		id: Corps.ID,
+		value: Corps
+	)
 }
 
 // MARK: -
 extension IDFields: CorpsFields where Model == Corps.Identified {
-	public init(corps: Corps.Identified) {
-		self.init(id: corps.id)
+	public init(
+		id: Corps.ID,
+		value: Corps
+	) {
+		self.init(id: id)
 	}
 }

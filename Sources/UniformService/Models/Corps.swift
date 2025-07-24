@@ -21,7 +21,7 @@ public struct IdentifiedCorps: Sendable {
 // MARK: -
 extension Corps.Identified: Identifiable {
 	// MARK: Identifiable
-	public typealias RawIdentifier = UUID
+	public typealias RawIdentifier = Int
 }
 
 extension Corps.Identified: Valued {
