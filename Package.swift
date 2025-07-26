@@ -17,14 +17,14 @@ let package = Package(
 	],
 	dependencies: [
 		.package(url: "https://github.com/Fleuronic/Uniform", branch: "main"),
-		.package(url: "https://github.com/Fleuronic/Caesura", branch: "main")
+		.package(url: "https://github.com/Fleuronic/Catena", branch: "main")
 	],
 	targets: [
 		.target(
 			name: "UniformService",
 			dependencies: [
 				"Uniform",
-				"Caesura"
+				"Catena"
 			]
 		)
 	],
