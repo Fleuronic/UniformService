@@ -7,7 +7,7 @@ import protocol Catena.Fields
 public protocol CorpsFields: Fields where Model == Corps.Identified {
 	init(
 		id: Corps.ID,
-		value: Corps
+		name: String
 	)
 }
 
@@ -15,7 +15,7 @@ public protocol CorpsFields: Fields where Model == Corps.Identified {
 extension IDFields: CorpsFields where Model == Corps.Identified {
 	public init(
 		id: Corps.ID,
-		value: Corps
+		name: String
 	) {
 		self.init(id: id)
 	}

@@ -19,6 +19,18 @@ public struct IdentifiedCorps: Sendable {
 }
 
 // MARK: -
+public extension IdentifiedCorps {
+	init(
+		id: Corps.ID, 
+		name: String
+	) {
+		self.id = id
+		
+		value = .init(name: name)
+	}
+}
+
+// MARK: -
 extension Corps.Identified: Identifiable {
 	// MARK: Identifiable
 	public typealias RawIdentifier = Int
