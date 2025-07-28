@@ -6,12 +6,14 @@ import protocol Catena.Identifying
 import protocol Catena.ResultProviding
 
 public protocol CorpsSpec {
-	// associatedtype CorpsFetch//: Scoped<CorpsFetchFields>
-	// associatedtype CorpsList: Scoped<CorpsListFields>
+	associatedtype CorpsFetch: Scoped<CorpsFetchFields>
+	associatedtype CorpsList: Scoped<CorpsListFields>
 
-	// associatedtype CorpsFetchFields: CorpsFields
-	// associatedtype CorpsListFields: CorpsFields
+	associatedtype CorpsFetchFields: CorpsFields
+	associatedtype CorpsListFields: CorpsFields
 
-	// func fetchCorps(with id: Corps.ID) async -> CorpsFetch
-	// func listCorps() async -> CorpsList
+	associatedtype CorpsID: Identifying<Corps.Identified>
+
+	func fetchCorps(with id: CorpsID) async -> CorpsFetch
+	func listCorps() async -> CorpsList
 }

@@ -2,7 +2,6 @@
 
 import struct Uniform.Corps
 import struct Catena.IDFields
-import struct Catena.ImpossibleFields
 import protocol Catena.Fields
 
 public protocol CorpsFields: Fields where Model == Corps.Identified {
@@ -21,5 +20,3 @@ extension IDFields: CorpsFields where Model == Corps.Identified {
 		self.init(id: id)
 	}
 }
-
-extension ImpossibleFields: CorpsFields where Model == Corps.Identified {}
