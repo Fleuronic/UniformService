@@ -1,6 +1,15 @@
 {
-  "originHash" : "ddaff815f90571e64f05b1137ade1339017a5c0d7379bb8e765ecb14c6389d99",
+  "originHash" : "e7809b36f7f109993cea5e58dd88218c2d9499df0533ca40a60f7af5ad434b30",
   "pins" : [
+    {
+      "identity" : "caesura",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Fleuronic/Caesura",
+      "state" : {
+        "branch" : "main",
+        "revision" : "9838a287adb7c3bb29405e42a1fab79125033af4"
+      }
+    },
     {
       "identity" : "catena",
       "kind" : "remoteSourceControl",
@@ -11,12 +20,102 @@
       }
     },
     {
+      "identity" : "catenary",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Fleuronic/Catenary",
+      "state" : {
+        "branch" : "main",
+        "revision" : "90797585c762fd22505be4bcc9ebbb55f92c3fb7"
+      }
+    },
+    {
+      "identity" : "catenoid",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Fleuronic/Catenoid",
+      "state" : {
+        "branch" : "main",
+        "revision" : "935ed5a677b9dc1de206e2faa66d9742a15ea911"
+      }
+    },
+    {
+      "identity" : "differ",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tonyarnold/Differ",
+      "state" : {
+        "revision" : "5520fda947f1f9777a806389c2ba587219bc0538",
+        "version" : "1.4.6"
+      }
+    },
+    {
+      "identity" : "drumkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Fleuronic/DrumKit",
+      "state" : {
+        "branch" : "main",
+        "revision" : "d5dadd8941d0ac4d6d53cd54e245672e0e9ba55a"
+      }
+    },
+    {
+      "identity" : "drumkitservice",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Fleuronic/DrumKitService",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1829f30c96c6e6fe4f4491d44ce537ef4f5f1bcc"
+      }
+    },
+    {
       "identity" : "identity",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/jordanekay/Identity",
       "state" : {
         "branch" : "master",
         "revision" : "ff9dfdf4df87ff0d7064d40bdc230c5e55f0bcbf"
+      }
+    },
+    {
+      "identity" : "papyrus",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jordanekay/papyrus",
+      "state" : {
+        "branch" : "main",
+        "revision" : "ff604d6cca47a31a3e27588f6c5c155664175cb2"
+      }
+    },
+    {
+      "identity" : "persistdb",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jordanekay/PersistDB",
+      "state" : {
+        "branch" : "master",
+        "revision" : "1fcce3a2e8d5ff8dcd52ab60a743bc0fb9f06c78"
+      }
+    },
+    {
+      "identity" : "reactiveswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ReactiveCocoa/ReactiveSwift.git",
+      "state" : {
+        "branch" : "swift-concurrency",
+        "revision" : "3d40187c982346352d0adbe6b38e0e3d53fddc95"
+      }
+    },
+    {
+      "identity" : "schemata",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jordanekay/Schemata",
+      "state" : {
+        "branch" : "master",
+        "revision" : "1c5443b01cd2fb9f25e63197cfe35b96ba9bd2fc"
+      }
+    },
+    {
+      "identity" : "sociableweaver",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/NicholasBellucci/SociableWeaver.git",
+      "state" : {
+        "revision" : "dd8368fcf1f8fef5d672ea64775dc6f7b02d7a92",
+        "version" : "0.1.12"
       }
     },
     {

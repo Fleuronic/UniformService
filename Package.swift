@@ -17,6 +17,7 @@ let package = Package(
 	],
 	dependencies: [
 		.package(url: "https://github.com/Fleuronic/Uniform", branch: "main"),
+		.package(url: "https://github.com/Fleuronic/DrumKitService", branch: "main"),
 		.package(url: "https://github.com/Fleuronic/Catena", branch: "main")
 	],
 	targets: [
@@ -24,6 +25,7 @@ let package = Package(
 			name: "UniformService",
 			dependencies: [
 				"Uniform",
+				"DrumKitService",
 				"Catena"
 			]
 		)
