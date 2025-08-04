@@ -6,28 +6,13 @@ import struct Catena.IDFields
 import protocol Catena.Fields
 
 public protocol EventFields: Fields where Model == Event.Identified {
-	init(
-		id: Event.ID,
-		date: Date,
-		city: String,
-		state: String,
-		country: String,
-		show: String,
-		circuit: String
-	)
-}
+	associatedtype EventLocationFields: LocationFields
 
-// MARK: -
-extension IDFields: EventFields where Model == Event.Identified {
-	public init(
+	init?(
 		id: Event.ID,
 		date: Date,
-		city: String,
-		state: String,
-		country: String,
-		show: String,
-		circuit: String
-	) {
-		self.init(id: id)
-	}
+		location: EventLocationFields,
+		circuit: String,
+		show: String
+	)
 }
