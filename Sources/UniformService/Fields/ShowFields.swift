@@ -1,11 +1,11 @@
 // Copyright © Fleuronic LLC. All rights reserved.
 
 import Foundation
-import struct DrumKit.Location
-import struct DrumKitService.IdentifiedLocation
+import struct DrumKit.Show
+import struct DrumKitService.IdentifiedShow
 import struct Catena.IDFields
 import protocol Catena.Fields
 
-public protocol LocationFields: Fields where Model == Location.Identified {
+public protocol ShowFields: Fields where Model == Show.Identified {
 	init?(name: String)
 }
