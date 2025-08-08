@@ -9,12 +9,14 @@ public protocol EventFields: Fields where Model == Event.Identified {
 	associatedtype EventLocationFields: LocationFields
 	associatedtype EventCircuitFields: CircuitFields
 	associatedtype EventShowFields: ShowFields
+	associatedtype EventVenueFields: VenueFields
 
 	init?(
 		id: Event.ID,
 		date: Date,
 		location: EventLocationFields?,
 		circuit: EventCircuitFields?,
-		show: EventShowFields?
+		show: EventShowFields?,
+		venue: EventVenueFields?
 	)
 }
