@@ -7,5 +7,10 @@ import struct Catena.IDFields
 import protocol Catena.Fields
 
 public protocol VenueFields: Fields where Model == Venue.Identified {
-	init(name: String)
+	associatedtype VenueAddressFields: AddressFields
+
+	init(
+		name: String,
+		address: VenueAddressFields
+	)
 }
