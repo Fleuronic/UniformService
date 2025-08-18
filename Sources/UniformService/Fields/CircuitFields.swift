@@ -7,5 +7,5 @@ import struct Catena.IDFields
 import protocol Catena.Fields
 
 public protocol CircuitFields: Fields where Model == Circuit.Identified {
-	init?(name: String)
+	init(name: String)
 }

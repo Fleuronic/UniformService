@@ -10,6 +10,7 @@ public protocol EventFields: Fields where Model == Event.Identified {
 	associatedtype EventCircuitFields: CircuitFields
 	associatedtype EventShowFields: ShowFields
 	associatedtype EventVenueFields: VenueFields
+	associatedtype EventSlotFields: SlotFields
 
 	init?(
 		id: Event.ID,
@@ -17,6 +18,7 @@ public protocol EventFields: Fields where Model == Event.Identified {
 		location: EventLocationFields?,
 		circuit: EventCircuitFields?,
 		show: EventShowFields?,
-		venue: EventVenueFields?
+		venue: EventVenueFields?,
+		slots: [EventSlotFields]
 	)
 }
