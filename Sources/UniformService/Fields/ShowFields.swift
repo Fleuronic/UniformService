@@ -9,5 +9,8 @@ import protocol Catena.Fields
 public protocol ShowFields: Fields where Model == Show.Identified {
 	var name: String { get }
 
-	init?(name: String)
+	init?(
+		name: String,
+		year: Int
+	)
 }

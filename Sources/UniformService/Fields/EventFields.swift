@@ -15,6 +15,7 @@ public protocol EventFields: Fields where Model == Event.Identified {
 	init?(
 		id: Event.ID,
 		date: Date,
+		timeZone: String,
 		location: EventLocationFields?,
 		circuit: EventCircuitFields?,
 		show: EventShowFields?,

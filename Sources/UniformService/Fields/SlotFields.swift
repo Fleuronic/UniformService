@@ -8,7 +8,7 @@ import protocol Catena.Fields
 
 public protocol SlotFields: Fields where Model == Slot.Identified {
 	init(
-		time: String?,
+		time: String,
 		name: String
 	)
 }
