@@ -3,8 +3,6 @@
 import Identity
 import Foundation
 import struct Uniform.Corps
-import struct DrumKit.Location
-import struct DrumKitService.IdentifiedLocation
 import struct Catena.IDFields
 import protocol Catena.Valued
 
@@ -18,7 +16,6 @@ public extension Corps {
 public struct IdentifiedCorps: Sendable {
 	public let id: Corps.ID
 	public let value: Corps
-	public let location: Location.Identified
 }
 
 // MARK: -
@@ -26,12 +23,18 @@ public extension IdentifiedCorps {
 	init(
 		id: Corps.ID, 
 		name: String,
-		location: Location.Identified
+		city: String,
+		state: String,
+		country: String
 	) {
 		self.init(
 			id: id,
-			value: .init(name: name),
-			location: location
+			value: .init(
+				name: name, 
+				city: city, 
+				state: state, 
+				country: country
+			)
 		)
 	}
 }
