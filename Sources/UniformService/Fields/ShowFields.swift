@@ -11,6 +11,7 @@ public protocol ShowFields: Fields where Model == Show.Identified {
 
 	init?(
 		name: String,
+		city: String?,
 		year: Int
 	)
 }
