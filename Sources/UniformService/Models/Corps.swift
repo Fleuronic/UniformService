@@ -19,7 +19,7 @@ public struct IdentifiedCorps: Sendable {
 }
 
 // MARK: -
-public extension IdentifiedCorps {
+public extension Corps.Identified {
 	init(
 		id: Corps.ID, 
 		name: String,

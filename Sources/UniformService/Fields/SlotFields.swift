@@ -12,6 +12,7 @@ public protocol SlotFields: Fields where Model == Slot.Identified {
 	init(
 		time: String,
 		name: String,
-		placement: SlotPlacementFields?
+		placement: SlotPlacementFields?,
+		isPotentiallyEncore: Bool
 	)
 }

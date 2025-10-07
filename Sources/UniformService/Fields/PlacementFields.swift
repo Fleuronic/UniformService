@@ -10,6 +10,7 @@ public protocol PlacementFields: Fields where Model == Placement.Identified {
 	init(
 		rank: Int,
 		score: Double,
-		divisionName: String
+		divisionName: String,
+		circuitAbbreviation: String
 	)
 }

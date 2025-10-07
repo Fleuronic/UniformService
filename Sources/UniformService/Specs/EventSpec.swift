@@ -18,6 +18,6 @@ public protocol EventSpec {
 
 	associatedtype EventListFields: EventFields
 
-	func listEvents(for year: Int) async -> EventList
+	func listEvents(for year: Int, with corpsRecord: (String) async -> String) async -> EventList
 	func createEvent(on date: Date, inLocationWith locationID: Location.ID, byCircuitWith circuitID: Circuit.ID?, forShowWith showID: Show.ID?, atVenueWith venueID: Venue.ID?) async -> EventCreation
 }
