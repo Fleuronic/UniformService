@@ -13,8 +13,12 @@ private import MemberwiseInit
 
 public protocol SlotSpec {
 	associatedtype SlotCreation: Identifying<Slot.Identified>
+	associatedtype SlotUpdate: Identifying<Slot.Identified>
+	associatedtype SlotDeletion: Identifying<Slot.Identified>
 
 	func createSlots(with parameters: [Slot.CreationParameters], inEventWith eventID: Event.ID) async -> SlotCreation
+	func updateSlot(with id: Slot.ID, to time: Time) async -> SlotUpdate
+	func deleteSlots(with ids: [Slot.ID]) async -> SlotDeletion
 }
 
 // MARK: -

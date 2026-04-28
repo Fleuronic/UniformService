@@ -15,9 +15,13 @@ import protocol Catena.ResultProviding
 public protocol EventSpec {
 	associatedtype EventList: Scoped<EventListFields>
 	associatedtype EventCreation: Identifying<DrumKit.Event.Identified>
+	associatedtype EventUpdate: Identifying<DrumKit.Event.Identified>
+	associatedtype EventDeletion: Identifying<DrumKit.Event.Identified>
 
 	associatedtype EventListFields: EventFields
 
 	func listEvents(for year: Int, with corpsRecord: (String) async -> String) async -> EventList
 	func createEvent(on date: Date, inLocationWith locationID: Location.ID, byCircuitWith circuitID: Circuit.ID?, forShowWith showID: Show.ID?, atVenueWith venueID: Venue.ID?, detailsURL: URL?, scoresURL: URL?) async -> EventCreation
+	func updateEvent(with eventID: DrumKit.Event.ID, on date: Date, inLocationWith locationID: Location.ID, byCircuitWith circuitID: Circuit.ID?, forShowWith showID: Show.ID?, atVenueWith venueID: Venue.ID?, detailsURL: URL?, scoresURL: URL?) async -> EventUpdate
+	func deleteEvents(with ids: [DrumKit.Event.ID]) async -> EventDeletion
 }
