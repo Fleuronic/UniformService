@@ -7,7 +7,7 @@
       "location" : "https://github.com/Fleuronic/Caesura",
       "state" : {
         "branch" : "main",
-        "revision" : "9838a287adb7c3bb29405e42a1fab79125033af4"
+        "revision" : "ac0d10832d22933cdb97f8900a0eb6ff7b5e1d2d"
       }
     },
     {
@@ -16,7 +16,7 @@
       "location" : "https://github.com/Fleuronic/Catena",
       "state" : {
         "branch" : "main",
-        "revision" : "a856acd87172d24630cb9c3950de724d4df6312a"
+        "revision" : "912d76affb31853b78473715ee453e49f975ee0b"
       }
     },
     {
@@ -25,7 +25,7 @@
       "location" : "https://github.com/Fleuronic/Catenary",
       "state" : {
         "branch" : "main",
-        "revision" : "90797585c762fd22505be4bcc9ebbb55f92c3fb7"
+        "revision" : "7537f38a248d685ca9e9f978d081dd2550be46bf"
       }
     },
     {
@@ -34,7 +34,7 @@
       "location" : "https://github.com/Fleuronic/Catenoid",
       "state" : {
         "branch" : "main",
-        "revision" : "935ed5a677b9dc1de206e2faa66d9742a15ea911"
+        "revision" : "431758293b1ccfa00cee15d4bba512f668c1bb2a"
       }
     },
     {
@@ -52,7 +52,7 @@
       "location" : "https://github.com/Fleuronic/DrumKit",
       "state" : {
         "branch" : "main",
-        "revision" : "d5dadd8941d0ac4d6d53cd54e245672e0e9ba55a"
+        "revision" : "c8d4901a31885e218842fca12ecdb886a50800bd"
       }
     },
     {
@@ -61,7 +61,7 @@
       "location" : "https://github.com/Fleuronic/DrumKitService",
       "state" : {
         "branch" : "main",
-        "revision" : "1829f30c96c6e6fe4f4491d44ce537ef4f5f1bcc"
+        "revision" : "10c18eed3085d8d6f5f358ec5a2d1ee6594228f4"
       }
     },
     {
@@ -88,7 +88,7 @@
       "location" : "https://github.com/jordanekay/PersistDB",
       "state" : {
         "branch" : "master",
-        "revision" : "1fcce3a2e8d5ff8dcd52ab60a743bc0fb9f06c78"
+        "revision" : "75c77914db0f316b2d7269b8521b4226900d812d"
       }
     },
     {
@@ -106,7 +106,7 @@
       "location" : "https://github.com/jordanekay/Schemata",
       "state" : {
         "branch" : "master",
-        "revision" : "1c5443b01cd2fb9f25e63197cfe35b96ba9bd2fc"
+        "revision" : "776426b83cf9f11d9a88923388866f36504fda26"
       }
     },
     {
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/gohanlon/swift-memberwise-init-macro",
       "state" : {
-        "revision" : "47a2bdf45f1567e7324438f8482e362ee1c3fb44",
-        "version" : "0.5.2"
+        "revision" : "d0fb82bb6638051524214fb54524bfcd876735a1",
+        "version" : "0.6.0"
       }
     },
     {
@@ -142,7 +142,7 @@
       "location" : "https://github.com/Fleuronic/Uniform",
       "state" : {
         "branch" : "main",
-        "revision" : "b68bf78f39a0b2c469cc5b6cfbdb71f629f305aa"
+        "revision" : "e9ebca3d1031a47f58ddb8ceac99c0c06e98ccd0"
       }
     }
   ],
