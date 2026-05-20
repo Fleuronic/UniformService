@@ -9,6 +9,8 @@ import protocol Catena.Fields
 public protocol SlotFields: Fields where Model == Slot.Identified {
 	associatedtype SlotPlacementFields: PlacementFields
 
+	var feature: String? { get }
+
 	init(
 		time: String,
 		name: String,
