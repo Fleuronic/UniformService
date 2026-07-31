@@ -11,5 +11,5 @@ private import MemberwiseInit
 public protocol CircuitSpec {
 	associatedtype CircuitCreation: Identifying<Circuit.Identified>
 
-	func createCircuit(named name: String, abbreviatedAs abbreviation: String?) async -> CircuitCreation
+	func createCircuit(named name: String, abbreviatedAs abbreviation: String) async -> CircuitCreation
 }
