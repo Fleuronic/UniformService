@@ -7,10 +7,13 @@ import struct Catena.IDFields
 import protocol Catena.Fields
 
 public protocol PlacementFields: Fields where Model == Placement.Identified {
+	associatedtype PlacementCircuitFields: CircuitFields
+	associatedtype PlacementDivisionFields: DivisionFields where PlacementCircuitFields == PlacementDivisionFields.DivisionCircuitFields
+
 	init(
 		rank: Int,
 		score: Double,
-		divisionName: String?,
-		circuitAbbreviation: String
+		circuit: PlacementCircuitFields,
+		division: PlacementDivisionFields?
 	)
 }

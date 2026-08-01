@@ -10,7 +10,7 @@ public protocol EventFields: Fields where Model == Event.Identified {
 	associatedtype EventCircuitFields: CircuitFields
 	associatedtype EventShowFields: ShowFields
 	associatedtype EventVenueFields: VenueFields
-	associatedtype EventSlotFields: SlotFields
+	associatedtype EventSlotFields: SlotFields where EventCircuitFields == EventSlotFields.SlotPlacementFields.PlacementCircuitFields
 
 	init?(
 		id: Event.ID,
