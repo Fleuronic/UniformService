@@ -36,6 +36,6 @@ let package = Package(
 for target in package.targets {
 	target.swiftSettings = [
 		.enableExperimentalFeature("StrictConcurrency"),
-		.enableUpcomingFeature("ExistentialAny"),
+		.enableUpcomingFeature("ExistentialAny")
 	]
 }
